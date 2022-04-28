@@ -38,7 +38,7 @@ var toolbar = function (layer, parentVal) {
             view: "button",
             label: "Update Popout",
             click: function () {
-               updatePopout().show();
+               updatePopout({name:parentVal}).show();
             },
             batch: "Update Record",
          },
@@ -106,6 +106,8 @@ var selectOperationRow = function (layer, parentVal) {
    }
 }
 
+//----------------------------------------------------------------//
+// start field update popout
 var fieldUpdateOptions = function (field) {
    return {
       // batch "1" is visible initially
@@ -115,7 +117,7 @@ var fieldUpdateOptions = function (field) {
       cols: [
          {
             view: "text",
-            label: "Custom",
+            // label: "Custom",
             name: "Custom",
             placeholder: "Type here..",
             batch: "Custom",
@@ -123,7 +125,7 @@ var fieldUpdateOptions = function (field) {
          },
          {
             view: "text",
-            label: "Script",
+            // label: "Script",
             name: "Script",
             placeholder: "Code here..",
             batch: "Script",
@@ -143,7 +145,6 @@ var fieldUpdateOptions = function (field) {
       ]
    }
 };
-
 var fieldUpdateSelector = function (field) {
    return {
       cols: [
@@ -152,7 +153,7 @@ var fieldUpdateSelector = function (field) {
             id: `updateType${field}`,
             vertical: true,
             width: 100,
-            label: "Select",
+            //label: "Select",
             value: "Custom",
             options: ["Custom", "Script", "From Process"],
             on: {
@@ -172,8 +173,18 @@ var fieldUpdateSelector = function (field) {
       ]
    }
 }
+
 var updatePopout = function(data) {
-   data = data || selectSource;
+   data.options = data.options || selectSource.options;
+
+   var optionRow = function() {
+      return { // default row
+         view: "select", // label: "set", 
+         name: "set", 
+         options: selectSource.options,
+      }
+   };
+
    return webix.ui({
    view: 'window',
    modal: true,
@@ -182,46 +193,24 @@ var updatePopout = function(data) {
    height: 800,
    close: true,
    css: "mywin",
-   head: "Filter",
+   head: `Update ${data.name}`,
    body: {
       view: 'form',
       id: "update_form",
       elements: [
          {
             cols: [
-               {
-                  view: "select", label: "set", name: "set", 
-                  options: data.options,
-                  width: 250,
-                  on: {
-                     c: function (newValue, oldValue) { 
-                        // Update fieldUpdateSelector to match what the user selected
-                        if (newValue)
-                           $$(`updateType${oldValue}`)?.removeView(value);
-                           this.getParentView().addView(fieldUpdateSelector(value))
-                     }
-                  }
-               },
-               //
+               optionRow(),
                fieldUpdateSelector(data.options[0], data.options),
                // add new fields to update
                {
-                  view: "button", label: '' +
-                     '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
+                  view: "icon", icon: "wxi-plus",
                   click: function () {
                      $$('update_form').addView({
                         view: 'layout',
                         cols: [
-                           {
-                              view: "select", label: "set", name: "set", width: 250, align: "center",
-                              options: [
-                                 { value: "one" },
-                                 { value: "two" },
-                                 { value: "three" },
-                                 { value: "four" },
-                              ], width: 250
-                           },
-                           { view: "text", label: "to", name: "to", width: 250, align: "center" },
+                           optionRow(),
+                           fieldUpdateSelector(data.options[0], data.options),
                            {
                               view: "icon", icon: "wxi-trash",
                               click: function () {
@@ -256,7 +245,8 @@ var updatePopout = function(data) {
       ]
    }
 });
-}
+} // end field update popout
+//----------------------------------------------------------------//
 
 var filterPopout = function(data) {
     data = data || selectSource;
@@ -529,9 +519,7 @@ var form1 = {
    rows: [
       { view: "text", value: 'example', name: "tname", label: "*Name" },
       selectSource,
-      
-      
-      selectOperationRow(0),
+      selectOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
    ]
 
 };
