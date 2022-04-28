@@ -44,6 +44,14 @@ var toolbar = function (layer, parentVal) {
             },
             batch: "Update Record",
          },
+         {
+            view: "button",
+            label: "Filter",
+            click: function () {
+               updatePopout().show();
+            },
+            batch: "Find",
+         },
          { batch: "Update Record" }
       ]
    }
@@ -62,7 +70,7 @@ var selectOperationRow = function (layer, parentVal) {
                width: 250,
                label: "Select",
                value: "Choose next Operation",
-               options: ["Pluck", "Update Record", "Choose next Operation", "Save"],
+               options: ["Find","Pluck", "Update Record", "Choose next Operation", "Save"],
                on: {
                   onChange: function (value) { // passes in what the user selected
                      var mode = $$(`opVal${layer}`)?.getValue();
@@ -83,8 +91,10 @@ var selectOperationRow = function (layer, parentVal) {
                         let toRemove = this.getParentView();
                         // console.log($$(`group${layer}`))
                         // console.log($$(`group${layer+1}`))
+
                         $$(`tbar${layer}`).removeView($$(`tbar${layer}`))
                         $$(`group${layer}`).removeView($$(`opVal${layer}`))
+                        
                      },
                   },
                ]
@@ -259,6 +269,102 @@ var updatePopout = function(data) {
    }
 });
 }
+
+var filterPopout = function(data) {
+    data = data || selectSource;
+    return webix.ui({
+    view: 'window',
+    modal: true,
+    position: 'top',
+    width: 600,
+    height: 800,
+    close: true,
+    css: "mywin",
+    head: "Filter",
+    body: {
+       view: 'form',
+       id: "update_form",
+       elements: [
+          {
+             cols: [
+                {
+                   view: "select", label: "set", name: "set", 
+                   options: data.options,
+                   // options: [
+                   //    { value: "one" },
+                   //    { value: "two" },
+                   //    { value: "three" },
+                   //    { value: "four" },
+                   // ], 
+                   width: 250,
+                   on: {
+                      c: function (newValue, oldValue) { 
+                         // Update fieldUpdateSelector to match what the user selected
+                         if (newValue)
+                            $$(`updateType${oldValue}`)?.removeView(value);
+                            this.getParentView().addView(fieldUpdateSelector(value))
+                      }
+                   }
+                },
+                //
+                fieldUpdateSelector(data.options[0], data.options),
+                // add new fields to update
+                {
+                   view: "button", label: '' +
+                      '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
+                   click: function () {
+                      $$('update_form').addView({
+                         view: 'layout',
+                         cols: [
+                            {
+                               view: "select", label: "set", name: "set", width: 250, align: "center",
+                               options: [
+                                  { value: "one" },
+                                  { value: "two" },
+                                  { value: "three" },
+                                  { value: "four" },
+                               ], width: 250
+                            },
+                            { view: "text", label: "to", name: "to", width: 250, align: "center" },
+                            {
+                               view: "icon", icon: "wxi-trash",
+                               click: function () {
+                                  let toRemove = this.getParentView();
+                                  this.getParentView().getParentView().removeView(toRemove)
+                               }
+                            }
+                         ]
+                      }, 1)
+                   }
+                }
+             ]
+          },
+          {
+             margin: 5, cols: [
+                {},
+ 
+                {
+                   view: "button", value: "Save", css: "webix_primary",
+                   click: function () {
+                      this.getParentView().getParentView().getParentView().hide();
+                   }
+                },
+                {
+                   view: "button", value: "Cancel",
+                   click: function () {
+                      this.getParentView().getParentView().getParentView().hide();
+                   }
+ 
+                },
+                {}
+             ]
+          }
+       ]
+    }
+ });
+ }
+
+
 //----------------------------------Pluck window----------------------//
 var pluckWin = webix.ui({
    view: 'window',
@@ -423,7 +529,7 @@ var selectSource = {
       { value: "Moderator" },
       { value: "IE Category" }
 
-   ],
+   ],width: 250,
    on: {
       onChange: function (newv, oldv, config) {
         rebuildField( { layer:'0' , newData:newv, source:"group0"} )
@@ -431,6 +537,31 @@ var selectSource = {
    }
 
 };
+
+
+
+var selectSource_filters = {
+    view: "select", id: "select_filter", name: "select_filter", 
+    options: [
+       { value: "contains" },
+       { value: "doesn't contain" },
+       { value: "is" },
+       { value: "is not" },
+       { value: "*is empty" },
+       { value: "*is not empty" },
+       { value: "*By Query Field" },
+       { value: "*Not By Query Field" }
+       
+    ],width: 250,
+    on: {
+       onChange: function (newv, oldv, config) {
+       
+       }
+    }
+ 
+ };
+
+
 
 
 
@@ -463,7 +594,10 @@ var form1 = {
    view: "form", id: "main",
    rows: [
       { view: "text", value: 'example', name: "tname", label: "*Name" },
-      selectSource, selectOperationRow(0),
+      selectSource,
+      
+      
+      selectOperationRow(0),
    ]
 
 };
