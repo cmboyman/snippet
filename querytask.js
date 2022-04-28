@@ -8,8 +8,6 @@ var toolbar = function (layer, parentVal) {
       visibleBatch: "Choose next Operation",
       cols: [
          {
-            // view: "button",
-            // value: "save",
             batch: "Choose next Operation",
          },
          {
@@ -120,7 +118,6 @@ var fieldUpdateOptions = function (field) {
             label: "Custom",
             name: "Custom",
             placeholder: "Type here..",
-            // width: 440,
             batch: "Custom",
             // label: "Custom value:"
          },
@@ -129,7 +126,6 @@ var fieldUpdateOptions = function (field) {
             label: "Script",
             name: "Script",
             placeholder: "Code here..",
-            // width: 440,
             batch: "Script",
             // label: "Custom value:"
          },
@@ -196,12 +192,6 @@ var updatePopout = function(data) {
                {
                   view: "select", label: "set", name: "set", 
                   options: data.options,
-                  // options: [
-                  //    { value: "one" },
-                  //    { value: "two" },
-                  //    { value: "three" },
-                  //    { value: "four" },
-                  // ], 
                   width: 250,
                   on: {
                      c: function (newValue, oldValue) { 
@@ -248,7 +238,6 @@ var updatePopout = function(data) {
          {
             margin: 5, cols: [
                {},
-
                {
                   view: "button", value: "Save", css: "webix_primary",
                   click: function () {
@@ -260,7 +249,6 @@ var updatePopout = function(data) {
                   click: function () {
                      this.getParentView().getParentView().getParentView().hide();
                   }
-
                },
                {}
             ]
@@ -290,12 +278,6 @@ var filterPopout = function(data) {
                 {
                    view: "select", label: "set", name: "set", 
                    options: data.options,
-                   // options: [
-                   //    { value: "one" },
-                   //    { value: "two" },
-                   //    { value: "three" },
-                   //    { value: "four" },
-                   // ], 
                    width: 250,
                    on: {
                       c: function (newValue, oldValue) { 
@@ -342,7 +324,6 @@ var filterPopout = function(data) {
           {
              margin: 5, cols: [
                 {},
- 
                 {
                    view: "button", value: "Save", css: "webix_primary",
                    click: function () {
@@ -354,7 +335,6 @@ var filterPopout = function(data) {
                    click: function () {
                       this.getParentView().getParentView().getParentView().hide();
                    }
- 
                 },
                 {}
              ]
@@ -416,17 +396,10 @@ var pluckWin = webix.ui({
                               }
                            }
                         ]
-
                      }, 1)
-
                   }
                }
-
-
             ]
-
-
-
          },
          {
             margin: 5, cols: [
@@ -443,7 +416,6 @@ var pluckWin = webix.ui({
                   click: function () {
                      pluckWin.hide();
                   }
-
                },
                {}
             ]
@@ -451,8 +423,6 @@ var pluckWin = webix.ui({
       ]
    }
 })
-
-
 
 var selectSource = {
    view: "select", id: "select1", name: "select1", label: "Object",
@@ -528,17 +498,13 @@ var selectSource = {
       { value: "Batch" },
       { value: "Moderator" },
       { value: "IE Category" }
-
    ],width: 250,
    on: {
       onChange: function (newv, oldv, config) {
         rebuildField( { layer:'0' , newData:newv, source:"group0"} )
       }
    }
-
 };
-
-
 
 var selectSource_filters = {
     view: "select", id: "select_filter", name: "select_filter", 
@@ -551,45 +517,13 @@ var selectSource_filters = {
        { value: "*is not empty" },
        { value: "*By Query Field" },
        { value: "*Not By Query Field" }
-       
     ],width: 250,
     on: {
        onChange: function (newv, oldv, config) {
-       
        }
     }
- 
  };
-
-
-
-
-
 //------------------Select List------------------------//
-
-// var selectlist = {
-//    view: "select", id: "select2", name: "select2", label: "Select", value: "choose next operation",
-//    options: [
-//       { value: "choose next operation" },
-//       { value: "update record" },
-//       { value: "pluck" },
-//       { value: "save" },
-//    ], width: 500,
-//    /*
-//  on:{
-//    onChange: function(newv,oldv,config){
-//          if(newv=="pluck")
-      
-//          if(newv=="update record")
-//          //  webix.message(newv);
-//              winUpdate.show();	
-//         if(newv=="save")
-//            webix.message("Save");     
-//    }
-//  }*/
-// };
-
-
 var form1 = {
    view: "form", id: "main",
    rows: [
@@ -604,28 +538,12 @@ var form1 = {
 
 //----------------------------------------------------------------//
 
+
 function rebuildField(formData) {
    webix.ui(
       selectOperationRow(formData.layer,formData.newData)
       , $$(formData.source));
 }
-
-// webix.ui({
-
-//    view: "form",
-//    id: "root_form",
-
-//    rows: [
-//       selectOperationRow(0),
-//    ],
-//    on: {
-//       onChange: function (value) { // passes in what the user selected
-//          // var mode = $$(`opVal${layer}`)?.getValue();
-//          // if (value)
-//          //  $$(`tbar${layer}`)?.showBatch(value);
-//       }
-//    }
-// });
 webix.ui({
    id: "log_form",
    rows: [
@@ -633,29 +551,20 @@ webix.ui({
       {
          view: 'layout', id: "d1", hidden: true,
          cols: [
-
             { view: "text", label: "set", name: "set", width: 250, align: "center" },
-
             { view: "text", label: "to", name: "to", width: 250, align: "center" },
-
             {
                view: "icon", icon: "wxi-trash",
-
                click: function () {
-
                   let toRemove = this.getParentView();
-
                   this.getParentView().getParentView().removeView(toRemove)
-
                }
-
             },
          ]
       },
       {
          margin: 5, cols: [
             {},
-
             {
                view: "button", value: "OK", css: "webix_primary",
                click: function () {
@@ -670,6 +579,5 @@ webix.ui({
             {}
          ]
       }
-
    ]
 });
