@@ -1,6 +1,6 @@
 //------------------------------------Open Window for Update Record Filter----------------------------//
 
-var toolbar = function (layer) {
+var toolbar = function (layer, parentVal) {
    return {
       // batch "1" is visible initially
       view: "toolbar", type: "clean",
@@ -15,13 +15,10 @@ var toolbar = function (layer) {
          {
             view: "richselect",
             batch: "Pluck",
-            label: 'Field:',
+            label: 'Field:', 
             //value: 1,
-            options: [
-               { id: 1, value: "One" },
-               { id: 2, value: "Two" },
-               { id: 3, value: "Three" }
-            ],
+            // generate this list based off of parentVal
+            options: selectSource.options,
             on: {
                onChange: function (value) {
                   // passes in what the user selected
@@ -51,7 +48,7 @@ var toolbar = function (layer) {
       ]
    }
 };
-var selectOperationRow = function (layer, parent = null,) {
+var selectOperationRow = function (layer, parentVal) {
    return {
       rows: [{
          padding: 10,
@@ -76,7 +73,7 @@ var selectOperationRow = function (layer, parent = null,) {
             },
             {
                type: "clean", cols: [
-                  toolbar(layer),
+                  toolbar(layer, parentVal),
                   {
                      view: "icon",
                      icon: "wxi-trash",
@@ -170,7 +167,7 @@ var fieldUpdateSelector = function (field) {
    }
 }
 var updatePopout = function(data) {
-   data = data || selectData1;
+   data = data || selectSource;
    return webix.ui({
    view: 'window',
    modal: true,
@@ -351,8 +348,8 @@ var pluckWin = webix.ui({
 
 
 
-var selectData1 = {
-   view: "select", id: "select1", name: "select1", label: "Objects",
+var selectSource = {
+   view: "select", id: "select1", name: "select1", label: "Object",
    options: [
       { value: "Currency" },
       { value: "Expense Source" },
@@ -429,7 +426,7 @@ var selectData1 = {
    ],
    on: {
       onChange: function (newv, oldv, config) {
-
+        rebuildField( { layer:'0' , newData:newv, source:"group0"} )
       }
    }
 
@@ -438,34 +435,35 @@ var selectData1 = {
 
 
 //------------------Select List------------------------//
-var selectlist = {
-   view: "select", id: "select2", name: "select2", label: "Select", value: "choose next operation",
-   options: [
-      { value: "choose next operation" },
-      { value: "update record" },
-      { value: "pluck" },
-      { value: "save" },
-   ], width: 500,
-   /*
- on:{
-   onChange: function(newv,oldv,config){
-         if(newv=="pluck")
+
+// var selectlist = {
+//    view: "select", id: "select2", name: "select2", label: "Select", value: "choose next operation",
+//    options: [
+//       { value: "choose next operation" },
+//       { value: "update record" },
+//       { value: "pluck" },
+//       { value: "save" },
+//    ], width: 500,
+//    /*
+//  on:{
+//    onChange: function(newv,oldv,config){
+//          if(newv=="pluck")
       
-         if(newv=="update record")
-         //  webix.message(newv);
-             winUpdate.show();	
-        if(newv=="save")
-           webix.message("Save");     
-   }
- }*/
-};
+//          if(newv=="update record")
+//          //  webix.message(newv);
+//              winUpdate.show();	
+//         if(newv=="save")
+//            webix.message("Save");     
+//    }
+//  }*/
+// };
 
 
 var form1 = {
    view: "form", id: "main",
    rows: [
       { view: "text", value: 'example', name: "tname", label: "*Name" },
-      selectData1, selectOperationRow(0),
+      selectSource, selectOperationRow(0),
    ]
 
 };
@@ -474,7 +472,7 @@ var form1 = {
 
 function rebuildField(formData) {
    webix.ui(
-      selectOperationRow(formData.layer)
+      selectOperationRow(formData.layer,formData.newData)
       , $$(formData.source));
 }
 
