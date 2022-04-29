@@ -66,7 +66,7 @@ var toolbar = function (layer, parentVal) {
         label: "First",
         value: {},
         batch: "First",
-        on: {
+      //   on: {
           click: function (value) {
             // ! this needs to take the current data and limits it to the first record
             //! This hopefully increases performance???
@@ -78,7 +78,7 @@ var toolbar = function (layer, parentVal) {
               layer: layer + 1,
             });
           },
-        },
+      //   },
       },
       { batch: "Update Record" },
     ],
@@ -353,6 +353,24 @@ var updatePopout = function (data) {
 
 var filterPopout = function (data) {
   data = data || selectSource;
+
+   var filterOptionRow = function(){
+      return{
+         view: "select",
+         //   label: "set",
+           name: "set",
+           options: data.options,
+           //width: 100,
+           on: {
+             c: function (newValue, oldValue) {
+               // Update fieldUpdateSelector to match what the user selected
+               if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
+               this.getParentView().addView(filterSelector(value));
+             },
+           },
+      }
+   }
+
   return webix.ui({
     view: "window",
     modal: true,
@@ -368,55 +386,22 @@ var filterPopout = function (data) {
       elements: [
         {
           cols: [
-            {
-              view: "select",
-              label: "set",
-              name: "set",
-              options: data.options,
-              width: 250,
-              on: {
-                c: function (newValue, oldValue) {
-                  // Update fieldUpdateSelector to match what the user selected
-                  if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-                  this.getParentView().addView(filterSelector(value));
-                },
-              },
-            },
-            //
+            filterOptionRow(),
             filterSelector(data.options[0], data.options),
+
             // add new fields to update
             {
-              view: "button",
-              width: 50,
-              label:
-                "" +
-                '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
+      
+              view: "icon",
+              icon: "wxi-plus",
               click: function () {
                 $$("update_form").addView(
                   {
                     view: "layout",
                     cols: [
-                      {
-                        view: "select",
-                        label: "set",
-                        name: "set",
-                        width: 250,
-                        align: "center",
-                        options: [
-                          { value: "one" },
-                          { value: "two" },
-                          { value: "three" },
-                          { value: "four" },
-                        ],
-                        width: 250,
-                      },
-                      {
-                        view: "text",
-                        label: "to",
-                        name: "to",
-                        width: 250,
-                        align: "center",
-                      },
+                     filterOptionRow(),
+                     filterSelector(data.options[0], data.options),
+            
                       {
                         view: "icon",
                         icon: "wxi-trash",
