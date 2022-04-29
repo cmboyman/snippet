@@ -1,7 +1,28 @@
 //------------------------------------Open Window for Update Record Filter----------------------------//
-var showCountB = 0;
-var aaa = 0;
-var bbb = 0;
+var popoutCountRow=1;
+var finds = {};
+let updateStorage = {
+   updateCurrency199: {
+      updateObject: "Currency",
+      count: 2,
+      // TODO get the options, and rebuild popup showing them
+      options: [
+        { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
+      ],
+    },
+}
+let filterStorage = {
+  // TODO remove a filter
+  filter1: {
+    filteredObject: "Currency",
+    count: 2,
+    // TODO get the options, and rebuild popup showing them
+    options: [
+      { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
+    ],
+  },
+  filter2: { count: 4 },
+};
 
 var toolbar = function (layer, parentVal) {
   return {
@@ -44,20 +65,21 @@ var toolbar = function (layer, parentVal) {
       },
       {
         view: "button",
-        id: "popup1",
+        id: `popup1${layer}`,
         label: "Update Popout",
         click: function () {
-          updatePopout({ name: parentVal }).show();
+          updatePopout({ name: parentVal, layer,layer }).show();
         },
         batch: "Update Record",
       },
       {
         view: "button",
+        id: `popup${layer}`,
         label: "Filter",
         value: {},
         // badge: visualViewport.length(),
         click: function () {
-          filterPopout().show();
+          filterPopout({ layer: layer, parentVal: parentVal }).show();
         },
         batch: "Find",
       },
@@ -66,19 +88,19 @@ var toolbar = function (layer, parentVal) {
         label: "First",
         value: {},
         batch: "First",
-      //   on: {
-          click: function (value) {
-            // ! this needs to take the current data and limits it to the first record
-            //! This hopefully increases performance???
-            // TODO get current data and select first
-            // add a new row
-            rebuildField({
-              source: `group${layer + 1}`,
-              // pluckedVal: value, // pass in selected data
-              layer: layer + 1,
-            });
-          },
-      //   },
+        //   on: {
+        click: function (value) {
+          // ! this needs to take the current data and limits it to the first record
+          //! This hopefully increases performance???
+          // TODO get current data and select first
+          // add a new row
+          rebuildField({
+            source: `group${layer + 1}`,
+            // pluckedVal: value, // pass in selected data
+            layer: layer + 1,
+          });
+        },
+        //   },
       },
       { batch: "Update Record" },
     ],
@@ -294,7 +316,7 @@ var updatePopout = function (data) {
               view: "icon",
               icon: "wxi-plus",
               click: function () {
-                aaa = aaa + 1;
+                popoutCountRow++;
                 $$("update_form").addView(
                   {
                     view: "layout",
@@ -305,7 +327,7 @@ var updatePopout = function (data) {
                         view: "icon",
                         icon: "wxi-trash",
                         click: function () {
-                          aaa = aaa - 1;
+                           popoutCountRow--;
                           let toRemove = this.getParentView();
                           this.getParentView()
                             .getParentView()
@@ -330,8 +352,8 @@ var updatePopout = function (data) {
               css: "webix_primary",
               click: function () {
                 //	webix.message(aaa);
-                $$("popup1").config.badge = aaa;
-                $$("popup1").refresh();
+                $$(`popup1${data.layer}`).config.badge = popoutCountRow;
+                $$(`popup1${data.layer}`).refresh();
                 this.getParentView().getParentView().getParentView().hide();
               },
             },
@@ -352,24 +374,29 @@ var updatePopout = function (data) {
 //----------------------------------------------------------------//
 
 var filterPopout = function (data) {
-  data = data || selectSource;
+  data.options = data.options || selectSource.options;
+  var thisFilterId = `filter${data.parentVal}${data.layer}`;
+  var newFilter = {};
+  var oldFilter = filterStorage[thisFilterId]
+  console.log("🚀 ~ file: querytask.js ~ line 376 ~ filterPopout ~ oldFilter", oldFilter)
 
-   var filterOptionRow = function(){
-      return{
-         view: "select",
-         //   label: "set",
-           name: "set",
-           options: data.options,
-           //width: 100,
-           on: {
-             c: function (newValue, oldValue) {
-               // Update fieldUpdateSelector to match what the user selected
-               if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-               this.getParentView().addView(filterSelector(value));
-             },
-           },
-      }
-   }
+
+  var filterRowCount = 1;
+
+  var filterOptionRow = function () {
+    return {
+      view: "select",
+      name: "set",
+      options: data.options,
+      on: {
+        c: function (newValue, oldValue) {
+          // Update fieldUpdateSelector to match what the user selected
+          if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
+          this.getParentView().addView(filterSelector(value));
+        },
+      },
+    };
+  };
 
   return webix.ui({
     view: "window",
@@ -391,21 +418,22 @@ var filterPopout = function (data) {
 
             // add new fields to update
             {
-      
               view: "icon",
               icon: "wxi-plus",
               click: function () {
+                filterRowCount++;
                 $$("update_form").addView(
                   {
                     view: "layout",
                     cols: [
-                     filterOptionRow(),
-                     filterSelector(data.options[0], data.options),
-            
+                      filterOptionRow(),
+                      filterSelector(data.options[0], data.options),
+
                       {
                         view: "icon",
                         icon: "wxi-trash",
                         click: function () {
+                          filterRowCount--;
                           let toRemove = this.getParentView();
                           this.getParentView()
                             .getParentView()
@@ -429,8 +457,32 @@ var filterPopout = function (data) {
               value: "Save",
               css: "webix_primary",
               click: function () {
-                // TODO save values in parent
-                // ! ALERT THIS IS BAD
+                //  define new object
+               //  let thisFilterId = `filter${data.parentVal}${data.layer}`;
+               //  let newFilter = {};
+                newFilter[thisFilterId] = {
+                  filteredObject: data.parentVal,
+                  count: filterRowCount, // how many rows there are. used for badge
+                  // TODO save row values in parent
+                  options: {}, // each row
+                };
+
+                // update button
+                $$(`popup${data.layer}`).config.badge = filterRowCount;
+                $$(`popup${data.layer}`).refresh();
+
+                // if exists, use
+                if (filterStorage[thisFilterId]) {
+                  filterStorage[thisFilterId] = newFilter; // our new data;
+                } else {
+                  // else create new
+
+                  // set it in the storage
+                  filterStorage = {
+                    ...filterStorage,
+                    ...newFilter,
+                  };
+                }
                 this.getParentView().getParentView().getParentView().hide();
               },
             },
