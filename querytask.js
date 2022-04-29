@@ -1,571 +1,753 @@
 //------------------------------------Open Window for Update Record Filter----------------------------//
+var showCountB = 0;
+var aaa = 0;
+var bbb = 0;
 
 var toolbar = function (layer, parentVal) {
-   return {
-      // batch "1" is visible initially
-      view: "toolbar", type: "clean",
-      id: `tbar${layer}`,
-      visibleBatch: "Choose next Operation",
-      cols: [
-         {
-            batch: "Choose next Operation",
-         },
-         {
-            view: "richselect",
-            batch: "Pluck",
-            label: 'Field:', 
-            //value: 1,
-            // generate this list based off of parentVal
-            options: selectSource.options,
-            on: {
-               onChange: function (value) {
-                  // passes in what the user selected
-                  // add a new field
-                  rebuildField({ source: `group${layer + 1}`, pluckedVal: value, layer: layer + 1 })
-               }
-            }
-         },
-         {
-            view: "text",
-            label: "Name",
-            name: "name",
-            placeholder: "Type here..",
-            width: 440,
-            batch: "Save",
-            label: "Variable:"
-         },
-         {
-            view: "button",
-            label: "Update Popout",
-            click: function () {
-               updatePopout({name:parentVal}).show();
-            },
-            batch: "Update Record",
-         },
-         {
-            view: "button",
-            label: "Filter",
-            click: function () {
-               updatePopout().show();
-            },
-            batch: "Find",
-         },
-         { batch: "Update Record" }
-      ]
-   }
-};
-var selectOperationRow = function (layer, parentVal) {
-   return {
-      rows: [{
-         padding: 10,
-         id: `group${layer}`,
-         type: "clean",
-         cols: [
-            {
-               view: "select",
-               id: `opVal${layer}`,
-               vertical: true,
-               width: 250,
-               label: "Select",
-               value: "Choose next Operation",
-               options: ["Find","Pluck", "Update Record", "Choose next Operation", "Save"],
-               on: {
-                  onChange: function (value) { // passes in what the user selected
-                     var mode = $$(`opVal${layer}`)?.getValue();
-                     if (value)
-                        $$(`tbar${layer}`)?.showBatch(value);
-                  }
-               }
-            },
-            {
-               type: "clean", cols: [
-                  toolbar(layer, parentVal),
-                  {
-                     view: "icon",
-                     icon: "wxi-trash",
-                     click: function () {
-                        // reset the field
-                        rebuildField({ source: `group${layer}`, layer: layer })
-                        let toRemove = this.getParentView();
-                        // console.log($$(`group${layer}`))
-                        // console.log($$(`group${layer+1}`))
-
-                        $$(`tbar${layer}`).removeView($$(`tbar${layer}`))
-                        $$(`group${layer}`).removeView($$(`opVal${layer}`))
-                        
-                     },
-                  },
-               ]
-            }
-         ]
+  return {
+    // batch "1" is visible initially
+    view: "toolbar",
+    type: "clean",
+    id: `tbar${layer}`,
+    visibleBatch: "Choose next Operation",
+    cols: [
+      {
+        batch: "Choose next Operation",
       },
       {
-         id: `group${layer + 1}`, hidden: true, cols: []
-      }
-      ]
-   }
-}
+        view: "richselect",
+        batch: "Pluck",
+        label: "Field:",
+        //value: 1,
+        // generate this list based off of parentVal
+        options: selectSource.options,
+        on: {
+          onChange: function (value) {
+            // passes in what the user selected
+            // add a new field
+            rebuildField({
+              source: `group${layer + 1}`,
+              pluckedVal: value,
+              layer: layer + 1,
+            });
+          },
+        },
+      },
+      {
+        view: "text",
+        label: "Name",
+        name: "name",
+        placeholder: "Type here..",
+        width: 440,
+        batch: "Save",
+        label: "Variable:",
+      },
+      {
+        view: "button",
+        id: "popup1",
+        label: "Update Popout",
+        click: function () {
+          updatePopout({ name: parentVal }).show();
+        },
+        batch: "Update Record",
+      },
+      {
+        view: "button",
+        label: "Filter",
+        value: {},
+        // badge: visualViewport.length(),
+        click: function () {
+          filterPopout().show();
+        },
+        batch: "Find",
+      },
+      {
+        view: "button",
+        label: "First",
+        value: {},
+        batch: "First",
+        on: {
+          click: function (value) {
+            // ! this needs to take the current data and limits it to the first record
+            //! This hopefully increases performance???
+            // TODO get current data and select first
+            // add a new row
+            rebuildField({
+              source: `group${layer + 1}`,
+              // pluckedVal: value, // pass in selected data
+              layer: layer + 1,
+            });
+          },
+        },
+      },
+      { batch: "Update Record" },
+    ],
+  };
+};
+var selectOperationRow = function (layer, parentVal) {
+  return {
+    value: "can you see me now?",
+    name: "bob",
+    view: "",
+    rows: [
+      {
+        padding: 10,
+        id: `group${layer}`,
+        type: "clean",
+
+        cols: [
+          {
+            view: "select",
+            id: `opVal${layer}`,
+            vertical: true,
+            width: 250,
+            label: "Select",
+            value: "Choose next Operation",
+            options: [
+              "Find",
+              "First",
+              "Pluck",
+              "Update Record",
+              "Choose next Operation",
+              "Save",
+            ],
+            on: {
+              onChange: function (value) {
+                // passes in what the user selected
+                var mode = $$(`opVal${layer}`)?.getValue();
+                if (value) $$(`tbar${layer}`)?.showBatch(value);
+              },
+            },
+          },
+          {
+            type: "clean",
+            cols: [
+              toolbar(layer, parentVal),
+              {
+                view: "icon",
+                icon: "wxi-trash",
+                click: function () {
+                  // reset the field
+                  rebuildField({ source: `group${layer}`, layer: layer });
+                  let toRemove = this.getParentView();
+                  // console.log($$(`group${layer}`))
+                  // console.log($$(`group${layer+1}`))
+
+                  $$(`tbar${layer}`).removeView($$(`tbar${layer}`));
+                  $$(`group${layer}`).removeView($$(`opVal${layer}`));
+                },
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: `group${layer + 1}`,
+        hidden: true,
+        cols: [],
+      },
+    ],
+  };
+};
 
 //----------------------------------------------------------------//
 // start field update popout
 var fieldUpdateOptions = function (field) {
-   return {
-      // batch "1" is visible initially
-      view: "toolbar", type: "clean",
-      id: `updateOption${field}`,
-      visibleBatch: "Choose next Operation",
-      cols: [
-         {
-            view: "text",
-            // label: "Custom",
-            name: "Custom",
-            placeholder: "Type here..",
-            batch: "Custom",
-            // label: "Custom value:"
-         },
-         {
-            view: "text",
-            // label: "Script",
-            name: "Script",
-            placeholder: "Code here..",
-            batch: "Script",
-            // label: "Custom value:"
-         },
-         {
-            view: "richselect",
-            batch: "From Process",
-            // label: 'Field:',
-            //value: 1,
-            options: [
-               { id: 1, value: "One" },
-               { id: 2, value: "Two" },
-               { id: 3, value: "Three" }
-            ]
-         },
-      ]
-   }
+  return {
+    // batch "1" is visible initially
+    view: "toolbar",
+    type: "clean",
+    id: `updateOption${field}`,
+    visibleBatch: "Choose next Operation",
+    cols: [
+      {
+        view: "text",
+        // label: "Custom",
+        name: "Custom",
+        placeholder: "Type here..",
+        batch: "Custom",
+        // label: "Custom value:"
+      },
+      {
+        view: "text",
+        // label: "Script",
+        name: "Script",
+        placeholder: "Code here..",
+        batch: "Script",
+        // label: "Custom value:"
+      },
+      {
+        view: "richselect",
+        batch: "From Process",
+        // label: 'Field:',
+        //value: 1,
+        options: [
+          { id: 1, value: "One" },
+          { id: 2, value: "Two" },
+          { id: 3, value: "Three" },
+        ],
+      },
+    ],
+  };
 };
 var fieldUpdateSelector = function (field) {
-   return {
-      cols: [
-         {
-            view: "select",
-            id: `updateType${field}`,
-            vertical: true,
-            width: 100,
-            //label: "Select",
-            value: "Custom",
-            options: ["Custom", "Script", "From Process"],
-            on: {
-               onChange: function (value) { 
-                  // Update options to match what the user selected
-                  if (value)
-                     $$(`updateOption${field}`)?.showBatch(value);
-               }
-            }
-         },
-         {
-            type: "clean", cols: [
-               // show the options
-               fieldUpdateOptions(field),
-            ]
-         }
-      ]
-   }
-}
+  return {
+    cols: [
+      {
+        view: "select",
+        id: `updateType${field}`,
+        vertical: true,
+        width: 100,
+        //label: "Select",
+        value: "Custom",
+        options: ["Custom", "Script", "From Process"],
+        on: {
+          onChange: function (value) {
+            // Update options to match what the user selected
+            if (value) $$(`updateOption${field}`)?.showBatch(value);
+          },
+        },
+      },
+      {
+        type: "clean",
+        cols: [
+          // show the options
+          fieldUpdateOptions(field),
+        ],
+      },
+    ],
+  };
+};
 
-var updatePopout = function(data) {
-   data.options = data.options || selectSource.options;
+var filterSelector = function (field) {
+  return {
+    cols: [
+      {
+        view: "select",
+        id: `updateType${field}`,
+        vertical: true,
+        width: 200,
+        label: "",
+        value: "Custom",
+        options: [
+          "contains",
+          "doesn't contain",
+          "is",
+          "is not",
+          "*is empty",
+          "*is not empty",
+          "*By Query Field",
+          "*Not By Query Field",
+        ],
+        on: {
+          onChange: function (value) {
+            // Update options to match what the user selected
+            if (value) $$(`updateOption${field}`)?.showBatch(value);
+          },
+        },
+      },
+      {
+        view: "text",
+        width: 200,
+        value: "",
+      },
+      {
+        type: "clean",
+        cols: [
+          // show the options
+          fieldUpdateOptions(field),
+        ],
+      },
+    ],
+  };
+};
 
-   var optionRow = function() {
-      return { // default row
-         view: "select", // label: "set", 
-         name: "set", 
-         options: selectSource.options,
-      }
-   };
-
-   return webix.ui({
-   view: 'window',
-   modal: true,
-   position: 'top',
-   width: 600,
-   height: 800,
-   close: true,
-   css: "mywin",
-   head: `Update ${data.name}`,
-   body: {
-      view: 'form',
-      id: "update_form",
-      elements: [
-         {
-            cols: [
-               optionRow(),
-               fieldUpdateSelector(data.options[0], data.options),
-               // add new fields to update
-               {
-                  view: "icon", icon: "wxi-plus",
-                  click: function () {
-                     $$('update_form').addView({
-                        view: 'layout',
-                        cols: [
-                           optionRow(),
-                           fieldUpdateSelector(data.options[0], data.options),
-                           {
-                              view: "icon", icon: "wxi-trash",
-                              click: function () {
-                                 let toRemove = this.getParentView();
-                                 this.getParentView().getParentView().removeView(toRemove)
-                              }
-                           }
-                        ]
-                     }, 1)
-                  }
-               }
-            ]
-         },
-         {
-            margin: 5, cols: [
-               {},
-               {
-                  view: "button", value: "Save", css: "webix_primary",
-                  click: function () {
-                     this.getParentView().getParentView().getParentView().hide();
-                  }
-               },
-               {
-                  view: "button", value: "Cancel",
-                  click: function () {
-                     this.getParentView().getParentView().getParentView().hide();
-                  }
-               },
-               {}
-            ]
-         }
-      ]
-   }
-});
-} // end field update popout
-//----------------------------------------------------------------//
-
-var filterPopout = function(data) {
-    data = data || selectSource;
-    return webix.ui({
-    view: 'window',
+var updatePopout = function (data) {
+  data.options = data.options || selectSource.options;
+  var optionRow = function () {
+    return {
+      // default row
+      view: "select", // label: "set",
+      name: "set",
+      options: selectSource.options,
+    };
+  };
+  return webix.ui({
+    view: "window",
     modal: true,
-    position: 'top',
+    position: "top",
     width: 600,
     height: 800,
     close: true,
     css: "mywin",
     head: "Filter",
     body: {
-       view: 'form',
-       id: "update_form",
-       elements: [
-          {
-             cols: [
-                {
-                   view: "select", label: "set", name: "set", 
-                   options: data.options,
-                   width: 250,
-                   on: {
-                      c: function (newValue, oldValue) { 
-                         // Update fieldUpdateSelector to match what the user selected
-                         if (newValue)
-                            $$(`updateType${oldValue}`)?.removeView(value);
-                            this.getParentView().addView(fieldUpdateSelector(value))
-                      }
-                   }
-                },
-                //
-                fieldUpdateSelector(data.options[0], data.options),
-                // add new fields to update
-                {
-                   view: "button", label: '' +
-                      '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
-                   click: function () {
-                      $$('update_form').addView({
-                         view: 'layout',
-                         cols: [
-                            {
-                               view: "select", label: "set", name: "set", width: 250, align: "center",
-                               options: [
-                                  { value: "one" },
-                                  { value: "two" },
-                                  { value: "three" },
-                                  { value: "four" },
-                               ], width: 250
-                            },
-                            { view: "text", label: "to", name: "to", width: 250, align: "center" },
-                            {
-                               view: "icon", icon: "wxi-trash",
-                               click: function () {
-                                  let toRemove = this.getParentView();
-                                  this.getParentView().getParentView().removeView(toRemove)
-                               }
-                            }
-                         ]
-                      }, 1)
-                   }
-                }
-             ]
-          },
-          {
-             margin: 5, cols: [
-                {},
-                {
-                   view: "button", value: "Save", css: "webix_primary",
-                   click: function () {
-                      this.getParentView().getParentView().getParentView().hide();
-                   }
-                },
-                {
-                   view: "button", value: "Cancel",
-                   click: function () {
-                      this.getParentView().getParentView().getParentView().hide();
-                   }
-                },
-                {}
-             ]
-          }
-       ]
-    }
- });
- }
+      view: "form",
+      id: "update_form",
+      elements: [
+        {
+          cols: [
+            optionRow(),
+            fieldUpdateSelector(data.options[0], data.options),
+            // add new fields to update
+            {
+              view: "icon",
+              icon: "wxi-plus",
+              click: function () {
+                aaa = aaa + 1;
+                $$("update_form").addView(
+                  {
+                    view: "layout",
+                    cols: [
+                      optionRow(),
+                      fieldUpdateSelector(data.options[0], data.options),
+                      {
+                        view: "icon",
+                        icon: "wxi-trash",
+                        click: function () {
+                          aaa = aaa - 1;
+                          let toRemove = this.getParentView();
+                          this.getParentView()
+                            .getParentView()
+                            .removeView(toRemove);
+                        },
+                      },
+                    ],
+                  },
+                  1
+                );
+              },
+            },
+          ],
+        },
+        {
+          margin: 5,
+          cols: [
+            {},
+            {
+              view: "button",
+              value: "Save",
+              css: "webix_primary",
+              click: function () {
+                //	webix.message(aaa);
+                $$("popup1").config.badge = aaa;
+                $$("popup1").refresh();
+                this.getParentView().getParentView().getParentView().hide();
+              },
+            },
+            {
+              view: "button",
+              value: "Cancel",
+              click: function () {
+                this.getParentView().getParentView().getParentView().hide();
+              },
+            },
+            {},
+          ],
+        },
+      ],
+    },
+  });
+}; // end field update popout
+//----------------------------------------------------------------//
 
+var filterPopout = function (data) {
+  data = data || selectSource;
+  return webix.ui({
+    view: "window",
+    modal: true,
+    position: "top",
+    width: 600,
+    height: 800,
+    close: true,
+    css: "mywin",
+    head: "Filter",
+    body: {
+      view: "form",
+      id: "update_form",
+      elements: [
+        {
+          cols: [
+            {
+              view: "select",
+              label: "set",
+              name: "set",
+              options: data.options,
+              width: 250,
+              on: {
+                c: function (newValue, oldValue) {
+                  // Update fieldUpdateSelector to match what the user selected
+                  if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
+                  this.getParentView().addView(filterSelector(value));
+                },
+              },
+            },
+            //
+            filterSelector(data.options[0], data.options),
+            // add new fields to update
+            {
+              view: "button",
+              width: 50,
+              label:
+                "" +
+                '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
+              click: function () {
+                $$("update_form").addView(
+                  {
+                    view: "layout",
+                    cols: [
+                      {
+                        view: "select",
+                        label: "set",
+                        name: "set",
+                        width: 250,
+                        align: "center",
+                        options: [
+                          { value: "one" },
+                          { value: "two" },
+                          { value: "three" },
+                          { value: "four" },
+                        ],
+                        width: 250,
+                      },
+                      {
+                        view: "text",
+                        label: "to",
+                        name: "to",
+                        width: 250,
+                        align: "center",
+                      },
+                      {
+                        view: "icon",
+                        icon: "wxi-trash",
+                        click: function () {
+                          let toRemove = this.getParentView();
+                          this.getParentView()
+                            .getParentView()
+                            .removeView(toRemove);
+                        },
+                      },
+                    ],
+                  },
+                  1
+                );
+              },
+            },
+          ],
+        },
+        {
+          margin: 5,
+          cols: [
+            {},
+            {
+              view: "button",
+              value: "Save",
+              css: "webix_primary",
+              click: function () {
+                // TODO save values in parent
+                // ! ALERT THIS IS BAD
+                this.getParentView().getParentView().getParentView().hide();
+              },
+            },
+            {
+              view: "button",
+              value: "Cancel",
+              click: function () {
+                this.getParentView().getParentView().getParentView().hide();
+              },
+            },
+            {},
+          ],
+        },
+      ],
+    },
+  });
+};
 
 //----------------------------------Pluck window----------------------//
 var pluckWin = webix.ui({
-   view: 'window',
-   modal: true,
-   position: 'top',
-   width: 600,
-   height: 800,
-   close: true,
-   css: "mywin",
-   head: "Pluck Window",
-   body: {
-      view: 'form',
-      id: "pluck_form",
-      elements: [
-         {
-            cols: [
-               {
-                  view: "select", label: "Fields", name: "Fields", options: [
-                     { value: "one" },
-                     { value: "two" },
-                     { value: "three" },
-                     { value: "four" },
-                  ], width: 250
-               },
-               { view: "text", label: "Save", name: "Save", width: 250, align: "center" },
-               {
-                  view: "button", label: '' +
-                     '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
-                  click: function () {
-                     $$('pluck_form').addView({
-                        view: 'layout',
-                        cols: [
-                           {
-                              view: "select", label: "Fields", name: "Fields", width: 250, align: "center",
-                              options: [
-                                 { value: "one" },
-                                 { value: "two" },
-                                 { value: "three" },
-                                 { value: "four" },
-                              ], width: 250
+  view: "window",
+  modal: true,
+  position: "top",
+  width: 600,
+  height: 800,
+  close: true,
+  css: "mywin",
+  head: "Pluck Window",
+  body: {
+    view: "form",
+    id: "pluck_form",
+    elements: [
+      {
+        cols: [
+          {
+            view: "select",
+            label: "Fields",
+            name: "Fields",
+            options: [
+              { value: "one" },
+              { value: "two" },
+              { value: "three" },
+              { value: "four" },
+            ],
+            width: 250,
+          },
+          {
+            view: "text",
+            label: "Save",
+            name: "Save",
+            width: 250,
+            align: "center",
+          },
+          {
+            view: "button",
+            label:
+              "" +
+              '<font size="5px"><i class="fa-solid fa-circle-plus" aria-hidden="true"></i></font>',
+            click: function () {
+              $$("pluck_form").addView(
+                {
+                  view: "layout",
+                  cols: [
+                    {
+                      view: "select",
+                      label: "Fields",
+                      name: "Fields",
+                      width: 250,
+                      align: "center",
+                      options: [
+                        { value: "one" },
+                        { value: "two" },
+                        { value: "three" },
+                        { value: "four" },
+                      ],
+                      width: 250,
+                    },
+                    {
+                      view: "text",
+                      label: "Save",
+                      name: "Save",
+                      width: 250,
+                      align: "center",
+                    },
+                    {
+                      view: "icon",
+                      icon: "wxi-trash",
+                      click: function () {
+                        let toRemove = this.getParentView();
+                        this.getParentView()
+                          .getParentView()
+                          .removeView(toRemove);
+                      },
+                    },
+                  ],
+                },
+                1
+              );
+            },
+          },
+        ],
+      },
+      {
+        margin: 5,
+        cols: [
+          {},
 
-                           },
-                           { view: "text", label: "Save", name: "Save", width: 250, align: "center" },
-                           {
-                              view: "icon", icon: "wxi-trash",
-                              click: function () {
-                                 let toRemove = this.getParentView();
-                                 this.getParentView().getParentView().removeView(toRemove)
-                              }
-                           }
-                        ]
-                     }, 1)
-                  }
-               }
-            ]
-         },
-         {
-            margin: 5, cols: [
-               {},
-
-               {
-                  view: "button", value: "Save", css: "webix_primary",
-                  click: function () {
-                     pluckWin.hide();
-                  }
-               },
-               {
-                  view: "button", value: "Cancel",
-                  click: function () {
-                     pluckWin.hide();
-                  }
-               },
-               {}
-            ]
-         }
-      ]
-   }
-})
+          {
+            view: "button",
+            value: "Save",
+            css: "webix_primary",
+            click: function () {
+              pluckWin.hide();
+            },
+          },
+          {
+            view: "button",
+            value: "Cancel",
+            click: function () {
+              pluckWin.hide();
+            },
+          },
+          {},
+        ],
+      },
+    ],
+  },
+});
 
 var selectSource = {
-   view: "select", id: "select1", name: "select1", label: "Object",
-   options: [
-      { value: "Currency" },
-      { value: "Expense Source" },
-      { value: "Ministry Team" },
-      { value: "Country" },
-      { value: "Expense Subcategory" },
-      { value: "Journal" },
-      { value: "Languages" },
-      { value: "Fiscal Month" },
-      { value: "Donation " },
-      { value: "Default Settings" },
-      { value: "Report Item" },
-      { value: "Dashboard Data" },
-      { value: "Feedback" },
-      { value: "QX Center" },
-      { value: "Entity" },
-      { value: "del" },
-      { value: "Receipt" },
-      { value: "Project Funding" },
-      { value: "Role" },
-      { value: "City" },
-      { value: "Expense Report" },
-      { value: "Social Media" },
-      { value: "Family" },
-      { value: "(?)Staff Donation" },
-      { value: "Insurance Information" },
-      { value: "Grades" },
-      { value: "Fiscal Year" },
-      { value: "Income Source" },
-      { value: "Team Assignments (key)" },
-      { value: "Project - Budgeting" },
-      { value: "Phone" },
-      { value: "Journal Entry" },
-      { value: "Donor Team" },
-      { value: "Grades" },
-      { value: "Address" },
-      { value: "System Check" },
-      { value: "Advance" },
-      { value: "Usable Balance" },
-      { value: "Donor" },
-      { value: "Account" },
-      { value: "Emergency Contact" },
-      { value: "Worker Information" },
-      { value: "Email" },
-      { value: "JE Archive" },
-      { value: "Scope" },
-      { value: "HR team link (key)" },
-      { value: "Project Income" },
-      { value: "Year" },
-      { value: "Team" },
-      { value: "Platform" },
-      { value: "Balance" },
-      { value: "Account - COA" },
-      { value: "Role" },
-      { value: "Responsibility Center" },
-      { value: "Exchange Rate" },
-      { value: "Leave Request" },
-      { value: "Course" },
-      { value: "MCC" },
-      { value: "Team Assignments" },
-      { value: "Person - Profile" },
-      { value: "Leave Request 2" },
-      { value: "Cash Account" },
-      { value: "Account Transfer" },
-      { value: "User Leave" },
-      { value: "Year del me" },
-      { value: "Project Expense" },
-      { value: "Expense" },
-      { value: "Budget" },
-      { value: "Batch" },
-      { value: "Moderator" },
-      { value: "IE Category" }
-   ],width: 250,
-   on: {
-      onChange: function (newv, oldv, config) {
-        rebuildField( { layer:'0' , newData:newv, source:"group0"} )
-      }
-   }
+  view: "select",
+  id: "select1",
+  name: "select1",
+  label: "Object",
+  options: [
+    { value: "Currency" },
+    { value: "Expense Source" },
+    { value: "Ministry Team" },
+    { value: "Country" },
+    { value: "Expense Subcategory" },
+    { value: "Journal" },
+    { value: "Languages" },
+    { value: "Fiscal Month" },
+    { value: "Donation " },
+    { value: "Default Settings" },
+    { value: "Report Item" },
+    { value: "Dashboard Data" },
+    { value: "Feedback" },
+    { value: "QX Center" },
+    { value: "Entity" },
+    { value: "del" },
+    { value: "Receipt" },
+    { value: "Project Funding" },
+    { value: "Role" },
+    { value: "City" },
+    { value: "Expense Report" },
+    { value: "Social Media" },
+    { value: "Family" },
+    { value: "(?)Staff Donation" },
+    { value: "Insurance Information" },
+    { value: "Grades" },
+    { value: "Fiscal Year" },
+    { value: "Income Source" },
+    { value: "Team Assignments (key)" },
+    { value: "Project - Budgeting" },
+    { value: "Phone" },
+    { value: "Journal Entry" },
+    { value: "Donor Team" },
+    { value: "Grades" },
+    { value: "Address" },
+    { value: "System Check" },
+    { value: "Advance" },
+    { value: "Usable Balance" },
+    { value: "Donor" },
+    { value: "Account" },
+    { value: "Emergency Contact" },
+    { value: "Worker Information" },
+    { value: "Email" },
+    { value: "JE Archive" },
+    { value: "Scope" },
+    { value: "HR team link (key)" },
+    { value: "Project Income" },
+    { value: "Year" },
+    { value: "Team" },
+    { value: "Platform" },
+    { value: "Balance" },
+    { value: "Account - COA" },
+    { value: "Role" },
+    { value: "Responsibility Center" },
+    { value: "Exchange Rate" },
+    { value: "Leave Request" },
+    { value: "Course" },
+    { value: "MCC" },
+    { value: "Team Assignments" },
+    { value: "Person - Profile" },
+    { value: "Leave Request 2" },
+    { value: "Cash Account" },
+    { value: "Account Transfer" },
+    { value: "User Leave" },
+    { value: "Year del me" },
+    { value: "Project Expense" },
+    { value: "Expense" },
+    { value: "Budget" },
+    { value: "Batch" },
+    { value: "Moderator" },
+    { value: "IE Category" },
+  ],
+  on: {
+    onChange: function (newv, oldv, config) {
+      rebuildField({ layer: "0", newData: newv, source: "group0" });
+    },
+  },
 };
 
 var selectSource_filters = {
-    view: "select", id: "select_filter", name: "select_filter", 
-    options: [
-       { value: "contains" },
-       { value: "doesn't contain" },
-       { value: "is" },
-       { value: "is not" },
-       { value: "*is empty" },
-       { value: "*is not empty" },
-       { value: "*By Query Field" },
-       { value: "*Not By Query Field" }
-    ],width: 250,
-    on: {
-       onChange: function (newv, oldv, config) {
-       }
-    }
- };
+  view: "select",
+  id: "select_filter",
+  name: "select_filter",
+  options: [
+    { value: "contains" },
+    { value: "doesn't contain" },
+    { value: "is" },
+    { value: "is not" },
+    { value: "*is empty" },
+    { value: "*is not empty" },
+    { value: "*By Query Field" },
+    { value: "*Not By Query Field" },
+  ],
+  width: 250,
+  on: {
+    onChange: function (newv, oldv, config) {},
+  },
+};
 //------------------Select List------------------------//
 var form1 = {
-   view: "form", id: "main",
-   rows: [
-      { view: "text", value: 'example', name: "tname", label: "*Name" },
-      selectSource,
-      selectOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
-   ]
+  view: "form",
+  id: "main",
 
+  rows: [
+    { view: "text", value: "example", name: "tname", label: "*Name" },
+
+    selectSource,
+    selectOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
+  ],
 };
 
 //----------------------------------------------------------------//
 
-
 function rebuildField(formData) {
-   webix.ui(
-      selectOperationRow(formData.layer,formData.newData)
-      , $$(formData.source));
+  webix.ui(
+    selectOperationRow(formData.layer, formData.newData),
+    $$(formData.source)
+  );
 }
 webix.ui({
-   id: "log_form",
-   rows: [
-      form1,
-      {
-         view: 'layout', id: "d1", hidden: true,
-         cols: [
-            { view: "text", label: "set", name: "set", width: 250, align: "center" },
-            { view: "text", label: "to", name: "to", width: 250, align: "center" },
-            {
-               view: "icon", icon: "wxi-trash",
-               click: function () {
-                  let toRemove = this.getParentView();
-                  this.getParentView().getParentView().removeView(toRemove)
-               }
-            },
-         ]
-      },
-      {
-         margin: 5, cols: [
-            {},
-            {
-               view: "button", value: "OK", css: "webix_primary",
-               click: function () {
-                  var check_select = $$("select2").getValue();
-                  if (check_select == "update record")
-                     updatePopout().show();
-                  if (check_select == "pluck")
-                     pluckWin.show();
-               }
-            },
-            { view: "button", value: "Cancel" },
-            {}
-         ]
-      }
-   ]
+  id: "log_form",
+  rows: [
+    form1,
+    {
+      view: "layout",
+      id: "d1",
+      hidden: true,
+      cols: [
+        {
+          view: "text",
+          label: "set",
+          name: "set",
+          width: 250,
+          align: "center",
+        },
+        { view: "text", label: "to", name: "to", width: 250, align: "center" },
+        {
+          view: "icon",
+          icon: "wxi-trash",
+          click: function () {
+            let toRemove = this.getParentView();
+            this.getParentView().getParentView().removeView(toRemove);
+          },
+        },
+      ],
+    },
+    {
+      margin: 5,
+      cols: [
+        {},
+        {
+          view: "button",
+          value: "OK",
+          css: "webix_primary",
+          click: function () {
+            console.log($$("main").getValues());
+            // var check_select = $$("select2").getValue();
+            // if (check_select == "update record")
+            //  // TODO save button here
+            // //  $$("left").setHTML("<pre>"+ JSON.stringify( $$("sets").getValues() , null, "\t") + "</pre>");
+            // if (check_select == "pluck")
+            //    pluckWin.show();
+          },
+        },
+        { view: "button", value: "Cancel" },
+        {},
+      ],
+    },
+  ],
 });
