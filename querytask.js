@@ -183,18 +183,19 @@ var selectOperationRow = function (layer, parentVal) {
 
 //----------------------------------------------------------------//
 // start field update popout
-var fieldUpdateOptions = function (field) {
+var fieldUpdateOptions = function (field,id) {
    return {
       // batch "1" is visible initially
       view: "toolbar",
       type: "clean",
-      id: `updateOption${field}`,
-      visibleBatch: "Choose next Operation",
+      name:`updateOption${id}`,
+      id: `updateOption${id}`,
+      visibleBatch: "Custom",
       cols: [
          {
             view: "text",
             // label: "Custom",
-            name: "Custom",
+            name: `Custom${id}`,
             placeholder: "Type here..",
             batch: "Custom",
             // label: "Custom value:"
@@ -202,13 +203,14 @@ var fieldUpdateOptions = function (field) {
          {
             view: "text",
             // label: "Script",
-            name: "Script",
+            name: `Script${id}`,
             placeholder: "Code here..",
             batch: "Script",
             // label: "Custom value:"
          },
          {
             view: "richselect",
+            name: `richselect${id}`,
             batch: "From Process",
             // label: 'Field:',
             //value: 1,
@@ -222,9 +224,12 @@ var fieldUpdateOptions = function (field) {
    };
 };
 var fieldUpdateSelector = function (field, id) {
+   debugger
+   field = typeof( field) === ("String") ? field: field.value
    return {
-      cols: [
-         {
+      // name:"updateType",
+      // cols: [
+         // {
             view: "select",
             id: `updateType${field}`,
             name: `updateType${field}${id}`,
@@ -236,27 +241,28 @@ var fieldUpdateSelector = function (field, id) {
             on: {
                onChange: function (value) {
                   // Update options to match what the user selected
-                  if (value) $$(`updateOption${field}`)?.showBatch(value);
+                  if (value) $$(`updateOption${id}`)?.showBatch(value);
                },
             },
-         },
-         {
-            type: "clean",
-            cols: [
+         // },
+         //{
+            // type: "clean",
+            // name:"scrollBy",
+            // cols: [
                // show the options
-               fieldUpdateOptions(field),
-            ],
-         },
-      ],
+               fieldUpdateOptions(field,id)//,
+            // ],
+         //},
+      // ],
    };
 };
 
-var filterSelector = function (field) {
+var filterSelector = function (field,id) {
    return {
       cols: [
          {
             view: "select",
-            id: `updateType${field}`,
+            id: `updateType${field}${id}`,
             vertical: true,
             width: 200,
             label: "",
@@ -274,7 +280,7 @@ var filterSelector = function (field) {
             on: {
                onChange: function (value) {
                   // Update options to match what the user selected
-                  if (value) $$(`updateOption${field}`)?.showBatch(value);
+                  if (value) $$(`updateOption${id}`)?.showBatch(value);
                },
             },
          },
@@ -287,7 +293,7 @@ var filterSelector = function (field) {
             type: "clean",
             cols: [
                // show the options
-               fieldUpdateOptions(field),
+               fieldUpdateOptions(field,id),
             ],
          },
       ],
@@ -297,13 +303,12 @@ var filterSelector = function (field) {
 var updatePopout = function (data) {
    data.options = data.options || selectSource.options;
    var popoutCountRow = 0;
-   console.log("🚀 ~ file: querytask.js ~ line 291 ~ updatePopout ~ popoutCountRow", popoutCountRow)
    var optionRow = function (id) {
       return {
          // default row
          id: "source",
          view: "select", // label: "set",
-         name: `set${id}`,
+         name: `source${id}`,
          options: selectSource.options,
       };
    };
@@ -315,15 +320,17 @@ var updatePopout = function (data) {
       height: 800,
       close: true,
       css: "mywin",
-      head: `Update d${data.parentVal}`,
+      head: `Update ${data.parentVal}`,
       body: {
          view: "form",
          id: "update_form",
+         name: "update_form",
          elements: [
-            {
+            { 
                cols: [
                   optionRow(popoutCountRow),
                   fieldUpdateSelector(data.options[0], popoutCountRow),
+                  fieldUpdateOptions("field",popoutCountRow),
                   // add new fields to update
                   {
                      view: "icon",
@@ -334,9 +341,11 @@ var updatePopout = function (data) {
                         $$("update_form").addView(
                            {
                               view: "layout",
+                              // name: `row${popoutCountRow}`,
                               cols: [
                                  optionRow(popoutCountRow), //
                                  fieldUpdateSelector(data.options[0], popoutCountRow),
+                                 fieldUpdateOptions("field",popoutCountRow),
                                  {
                                     view: "icon",
                                     icon: "wxi-trash",
@@ -369,6 +378,10 @@ var updatePopout = function (data) {
                      click: function () {
                         webix.message(popoutCountRow);
                         $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
+                        for (let index = 0; index <= popoutCountRow; index++) {
+                           let searchIndex = `updateOption${index}`//
+                           console.log("🚀 ~ file: querytask.js ~ line 378 ~ updatePopout ~ ", $$(searchIndex).getValues())
+                        }
                         console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
 
                         //  $$(`popupUpdate${data.layer}`).refresh();
@@ -396,7 +409,6 @@ var filterPopout = function (data) {
    var thisFilterId = `filter${data.parentVal}${data.layer}`;
    var newFilter = {};
    var oldFilter = filterStorage[thisFilterId]
-   console.log("🚀 ~ file: querytask.js ~ line 376 ~ filterPopout ~ oldFilter", oldFilter)
 
 
    var filterRowCount = 1;
@@ -410,7 +422,7 @@ var filterPopout = function (data) {
             c: function (newValue, oldValue) {
                // Update fieldUpdateSelector to match what the user selected
                if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-               this.getParentView().addView(filterSelector(value));
+               this.getParentView().addView(filterSelector(value,filterRowCount));
             },
          },
       };
@@ -432,7 +444,7 @@ var filterPopout = function (data) {
             {
                cols: [
                   filterOptionRow(),
-                  filterSelector(data.options[0], data.options),
+                  filterSelector(data.options[0], filterRowCount, data.options),
 
                   // add new fields to update
                   {
@@ -445,7 +457,7 @@ var filterPopout = function (data) {
                               view: "layout",
                               cols: [
                                  filterOptionRow(),
-                                 filterSelector(data.options[0], data.options),
+                                 filterSelector(data.options[0], filterRowCount, data.options),
 
                                  {
                                     view: "icon",
@@ -738,6 +750,7 @@ var selectSource_filters = {
 var form1 = {
    view: "form",
    id: "main",
+   name: "main",
 
    rows: [
       { view: "text", value: "example", name: "tname", label: "*Name" },
@@ -764,7 +777,6 @@ function rebuildRow(formData) {
    );
 }
 function removeRow(layer) {
-   console.log("🚀 ~ file: querytask.js ~ line 767 ~ removeRow ~ layer", layer)
    if($$(`group${layer}`)){
       removeRow(layer+1); // recursively remove
       // find the group_ view, get parent, then remove from parent 
