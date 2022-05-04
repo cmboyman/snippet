@@ -2,27 +2,42 @@
 var popoutCountRow = 1;
 var finds = {};
 let updateStorage = {
-   updateCurrency199: {
-      updateObject: "Currency",
-      count: 2,
-      // TODO get the options, and rebuild popup showing them
-      options: [
-         { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
-      ],
-   },
+   // updateCurrency199: {
+   //    updateObject: "Currency",
+   //    count: 2,
+   //    // TODO get the options, and rebuild popup showing them
+   //    options: [
+   //       { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
+   //    ],
+   // },
 }
 let filterStorage = {
-   // TODO remove a filter
-   filter1: {
-      filteredObject: "Currency",
-      count: 2,
-      // TODO get the options, and rebuild popup showing them
-      options: [
-         { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
-      ],
-   },
-   filter2: { count: 4 },
+   // // TODO remove a filter
+   // filter1: {
+   //    filteredObject: "Currency",
+   //    count: 2,
+   //    // TODO get the options, and rebuild popup showing them
+   //    options: [
+   //       { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
+   //    ],
+   // },
+   // filter2: { count: 4 },
 };
+/*
+ * @params
+ * value: value selected or input by user
+ * targetName: object row is going to act upon (?)
+ * layer: order in which this should be run
+ * 
+ * @return null
+*/
+function pushValuesUp(value, targetName, layer) {
+   let setValues = {}
+   // ! feel free to change this for it to match the AB structure
+   setValues[`rowLayer${layer}.userInput`] = value;
+   setValues[`rowLayer${layer}.targetName`] = targetName;
+   if (value) $$("main").setValues(setValues, true); // true here to not overwrite everything
+}
 
 var toolbar = function (layer, parentVal) {
    return {
@@ -43,14 +58,18 @@ var toolbar = function (layer, parentVal) {
             // generate this list based off of parentVal
             options: selectSource.options,
             on: {
+               // TODO don't wipe next row if it is updated Find
+               // TODO don't wipe next row if it is updated Update
+
                onChange: function (value) {
                   // passes in what the user selected
                   // add a new field
                   rebuildRow({
-                     source: `group${layer + 1}`,
+                     source: `rowLayer${layer + 1}`,
                      pluckedVal: value,
                      layer: layer + 1,
                   });
+                  pushValuesUp(value, 'rowLayer', layer);
                },
             },
          },
@@ -62,6 +81,11 @@ var toolbar = function (layer, parentVal) {
             width: 440,
             batch: "Save",
             label: "Variable:",
+            on: {
+               onChange: function (value) {
+                  pushValuesUp(value, 'rowLayer', layer)
+               },
+            },
          },
          {
             view: "button",
@@ -69,7 +93,7 @@ var toolbar = function (layer, parentVal) {
             label: "Update Popout",
             click: function () {
                rebuildRow({
-                  source: `group${layer + 1}`,
+                  source: `rowLayer${layer + 1}`,
                   // pluckedVal: value, // pass in selected data
                   layer: layer + 1,
                });
@@ -84,7 +108,7 @@ var toolbar = function (layer, parentVal) {
             badge: 0,
             click: function () {
                rebuildRow({
-                  source: `group${layer + 1}`,
+                  source: `rowLayer${layer + 1}`,
                   // pluckedVal: value, // pass in selected data
                   layer: layer + 1,
                });
@@ -102,10 +126,12 @@ var toolbar = function (layer, parentVal) {
                   // TODO get current data and select first
                   // add a new row
                   rebuildRow({
-                     source: `group${layer + 1}`,
+                     source: `rowLayer${layer + 1}`,
                      // pluckedVal: value, // pass in selected data
                      layer: layer + 1,
                   });
+                  // save that first was selected on the main form
+                  pushValuesUp("first", 'rowLayer', layer)
                },
             },
          },
@@ -114,17 +140,14 @@ var toolbar = function (layer, parentVal) {
 };
 var selectOperationRow = function (layer, parentVal) {
    return {
-      value: "can you see me now?",
-      name: "bob",
-      view: "",
       rows: [
          {
             padding: 10,
-            id: `group${layer}`,
+            id: `rowLayer${layer}`,
             type: "clean",
-
             cols: [
                {
+                  name: `rowLayer${layer}.operationType.select`,
                   view: "select",
                   id: `opVal${layer}`,
                   vertical: true,
@@ -146,7 +169,7 @@ var selectOperationRow = function (layer, parentVal) {
                         if (value) $$(`tbar${layer}`)?.showBatch(value)
 
                         rebuildRow({
-                           source: `group${layer + 1}`,
+                           source: `rowLayer${layer + 1}`,
                            // pluckedVal: value, // pass in selected data
                            layer: layer + 1,
                         });
@@ -162,10 +185,10 @@ var selectOperationRow = function (layer, parentVal) {
                         icon: "wxi-trash",
                         click: function () {
                            // reset the field
-                           rebuildRow({ source: `group${layer}`, layer: layer });
+                           rebuildRow({ source: `rowLayer${layer}`, layer: layer });
                            let toRemove = this.getParentView();
                            $$(`tbar${layer}`).removeView($$(`tbar${layer}`));
-                           $$(`group${layer}`).removeView($$(`opVal${layer}`));
+                           $$(`rowLayer${layer}`).removeView($$(`opVal${layer}`));
                         },
                      },
                   ],
@@ -173,7 +196,7 @@ var selectOperationRow = function (layer, parentVal) {
             ],
          },
          {
-            id: `group${layer + 1}`,
+            id: `rowLayer${layer + 1}`,
             hidden: true,
             cols: [],
          },
@@ -183,12 +206,12 @@ var selectOperationRow = function (layer, parentVal) {
 
 //----------------------------------------------------------------//
 // start field update popout
-var fieldUpdateOptions = function (field,id) {
+var fieldUpdateOptions = function (field, id) {
    return {
       // batch "1" is visible initially
       view: "toolbar",
       type: "clean",
-      name:`updateOption${id}`,
+      name: `updateOption${id}`,
       id: `updateOption${id}`,
       visibleBatch: "Custom",
       cols: [
@@ -224,40 +247,39 @@ var fieldUpdateOptions = function (field,id) {
    };
 };
 var fieldUpdateSelector = function (field, id) {
-   debugger
-   field = typeof( field) === ("String") ? field: field.value
-   return {
+   field = typeof (field) === ("String") ? field : field.value
+   return (
       // name:"updateType",
       // cols: [
-         // {
-            view: "select",
-            id: `updateType${field}`,
-            name: `updateType${field}${id}`,
-            vertical: true,
-            width: 100,
-            //label: "Select",
-            value: "Custom",
-            options: ["Custom", "Script", "From Process"],
-            on: {
-               onChange: function (value) {
-                  // Update options to match what the user selected
-                  if (value) $$(`updateOption${id}`)?.showBatch(value);
-               },
+      {
+         view: "select",
+         id: `updateType${field}`,
+         name: `updateType${field}${id}`,
+         vertical: true,
+         width: 100,
+         //label: "Select",
+         value: "Custom",
+         options: ["Custom", "Script", "From Process"],
+         on: {
+            onChange: function (value) {
+               // Update options to match what the user selected
+               if (value) $$(`updateOption${id}`)?.showBatch(value);
             },
-         // },
-         //{
-            // type: "clean",
-            // name:"scrollBy",
-            // cols: [
-               // show the options
-               fieldUpdateOptions(field,id)//,
-            // ],
-         //},
+         },
+      },
+      //{
+      // type: "clean",
+      // name:"scrollBy",
+      // cols: [
+      // show the options
+      fieldUpdateOptions(field, id)//,
       // ],
-   };
+      //},
+      // ],
+   );
 };
 
-var filterSelector = function (field,id) {
+var filterSelector = function (field, id) {
    return {
       cols: [
          {
@@ -293,7 +315,7 @@ var filterSelector = function (field,id) {
             type: "clean",
             cols: [
                // show the options
-               fieldUpdateOptions(field,id),
+               fieldUpdateOptions(field, id),
             ],
          },
       ],
@@ -326,11 +348,11 @@ var updatePopout = function (data) {
          id: "update_form",
          name: "update_form",
          elements: [
-            { 
+            {
                cols: [
                   optionRow(popoutCountRow),
                   fieldUpdateSelector(data.options[0], popoutCountRow),
-                  fieldUpdateOptions("field",popoutCountRow),
+                  fieldUpdateOptions("field", popoutCountRow),
                   // add new fields to update
                   {
                      view: "icon",
@@ -345,7 +367,7 @@ var updatePopout = function (data) {
                               cols: [
                                  optionRow(popoutCountRow), //
                                  fieldUpdateSelector(data.options[0], popoutCountRow),
-                                 fieldUpdateOptions("field",popoutCountRow),
+                                 fieldUpdateOptions("field", popoutCountRow),
                                  {
                                     view: "icon",
                                     icon: "wxi-trash",
@@ -422,7 +444,7 @@ var filterPopout = function (data) {
             c: function (newValue, oldValue) {
                // Update fieldUpdateSelector to match what the user selected
                if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-               this.getParentView().addView(filterSelector(value,filterRowCount));
+               this.getParentView().addView(filterSelector(value, filterRowCount));
             },
          },
       };
@@ -488,31 +510,24 @@ var filterPopout = function (data) {
                      css: "webix_primary",
                      click: function () {
                         //  define new object
-                        //  let thisFilterId = `filter${data.parentVal}${data.layer}`;
-                        //  let newFilter = {};
+                        let thisFilterId = `filter${data.parentVal}${data.layer}`;
+                        let newFilter = {};
                         newFilter[thisFilterId] = {
                            filteredObject: data.parentVal,
                            count: filterRowCount, // how many rows there are. used for badge
-                           // TODO save row values in parent
                            options: {}, // each row
                         };
-
+                        
                         // update button
+                        // ? should the value also be saved in the button?
                         $$(`popupFilter${data.layer}`).config.badge = filterRowCount;
                         $$(`popupFilter${data.layer}`).refresh();
+                        
+                        // save row values in parent
+                        // pushValuesUp(value, targetName, layer)
+                        pushValuesUp(newFilter, data.parentVal, data.layer)
 
-                        // if exists, use
-                        if (filterStorage[thisFilterId]) {
-                           filterStorage[thisFilterId] = newFilter; // our new data;
-                        } else {
-                           // else create new
-
-                           // set it in the storage
-                           filterStorage = {
-                              ...filterStorage,
-                              ...newFilter,
-                           };
-                        }
+                        // ? is there a better way to get the popup?
                         this.getParentView().getParentView().getParentView().hide();
                      },
                   },
@@ -722,7 +737,8 @@ var selectSource = {
    ],
    on: {
       onChange: function (newv, oldv, config) {
-         rebuildRow({ layer: "0", newData: newv, source: "group0" });
+         // rebuild the first row
+         rebuildRow({ layer: "0", newData: newv, source: "rowLayer0" });
       },
    },
 };
@@ -752,24 +768,26 @@ var form1 = {
    id: "main",
    name: "main",
 
-   rows: [
-      { view: "text", value: "example", name: "tname", label: "*Name" },
-
+   elements: [
+      // Query task name
+      { view: "text", value: "example", name: "tname", label: "Name" },
+      // select which object is first used in this querytask
       selectSource,
+      // first task 
       selectOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
    ],
 };
 
 //----------------------------------------------------------------//
- /*
-  * parameters:
-  * { layer: "0", // string int
-  * newData: newv, // new view
-  * source: "group0" }
- */
+/*
+* parameters:
+* { layer: "0", // string int
+* newData: newv, // new view
+* source: "rowLayer0" }
+*/
 function rebuildRow(formData) {
    // TODO 
-   removeRow(formData.layer+1);//
+   removeRow(formData.layer + 1);//
    // replace source with a a row built from newdata
    webix.ui(
       selectOperationRow(formData.layer, formData.newData),
@@ -777,10 +795,10 @@ function rebuildRow(formData) {
    );
 }
 function removeRow(layer) {
-   if($$(`group${layer}`)){
-      removeRow(layer+1); // recursively remove
-      // find the group_ view, get parent, then remove from parent 
-      $$(`group${layer}`).getParentView().removeView(`group${layer}`);
+   if ($$(`rowLayer${layer}`)) {
+      removeRow(layer + 1); // recursively remove
+      // find the rowLayer_ view, get parent, then remove from parent 
+      $$(`rowLayer${layer}`).getParentView().removeView(`rowLayer${layer}`);
    }
 
 }
@@ -789,32 +807,8 @@ webix.ui({
    rows: [
       form1,
       {
-         view: "layout",
-         id: "d1",
-         hidden: true,
-         cols: [
-            {
-               view: "text",
-               label: "set",
-               name: "set",
-               width: 250,
-               align: "center",
-            },
-            { view: "text", label: "to", name: "to", width: 250, align: "center" },
-            {
-               view: "icon",
-               icon: "wxi-trash",
-               click: function () {
-                  let toRemove = this.getParentView();
-                  this.getParentView().getParentView().removeView(toRemove);
-               },
-            },
-         ],
-      },
-      {
          margin: 5,
          cols: [
-            {},
             {
                view: "button",
                value: "OK",
@@ -829,8 +823,7 @@ webix.ui({
                   //    pluckWin.show();
                },
             },
-            { view: "button", value: "Cancel" },
-            {},
+            { view: "button", value: "Cancel" }
          ],
       },
    ],
