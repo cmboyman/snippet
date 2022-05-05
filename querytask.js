@@ -140,7 +140,7 @@ var baseOperationRow = function (layer, parentVal) {
             padding: 10,
             id: `rowLayer${layer}`,
             type: "clean",         
-            cols: [                          
+            cols: [                  
                {
                   name: `rowLayer${layer}.operationType.select`,
                   view: "select",
@@ -176,15 +176,7 @@ var baseOperationRow = function (layer, parentVal) {
                   cols: [
                      baseToolbar(layer, parentVal),
                      {
-                        view: "icon",
-                        icon: "wxi-trash",
-                        click: function () {
-                           // reset the field
-                           rebuildRow({ source: `rowLayer${layer}`, layer: layer });
-                           let toRemove = this.getParentView();
-                           $$(`tbar${layer}`).removeView($$(`tbar${layer}`));
-                           $$(`rowLayer${layer}`).removeView($$(`opVal${layer}`));
-                        },
+
                      },
                   ],
                },
@@ -207,6 +199,7 @@ var fieldUpdateOptions = function (field, layer) {
       // batch "1" is visible initially
       view: "toolbar",
       type: "clean",
+      borderless:true,
       name: `updateOption${layer}`,
       id: `updateOption${layer}`,
       visibleBatch: "Custom",
