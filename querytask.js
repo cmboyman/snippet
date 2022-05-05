@@ -2,26 +2,8 @@
 var popoutCountRow = 1;
 var finds = {};
 let updateStorage = {
-   // updateCurrency199: {
-   //    updateObject: "Currency",
-   //    count: 2,
-   //    // TODO get the options, and rebuild popup showing them
-   //    options: [
-   //       { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
-   //    ],
-   // },
 }
 let filterStorage = {
-   // // TODO remove a filter
-   // filter1: {
-   //    filteredObject: "Currency",
-   //    count: 2,
-   //    // TODO get the options, and rebuild popup showing them
-   //    options: [
-   //       { field: "Currency", filterBy: "contains", _searchfield_: "Dollars" },
-   //    ],
-   // },
-   // filter2: { count: 4 },
 };
 /*
  * @params
@@ -39,7 +21,7 @@ function pushValuesUp(value, targetName, layer) {
    if (value) $$("main").setValues(setValues, true); // true here to not overwrite everything
 }
 
-var toolbar = function (layer, parentVal) {
+var baseToolbar = function (layer, parentVal) {
    return {
       // batch "1" is visible initially
       view: "toolbar",
@@ -138,7 +120,7 @@ var toolbar = function (layer, parentVal) {
       ],
    };
 };
-var selectOperationRow = function (layer, parentVal) {
+var baseOperationRow = function (layer, parentVal) {
    return {
       rows: [
          {
@@ -179,7 +161,7 @@ var selectOperationRow = function (layer, parentVal) {
                {
                   type: "clean",
                   cols: [
-                     toolbar(layer, parentVal),
+                     baseToolbar(layer, parentVal),
                      {
                         view: "icon",
                         icon: "wxi-trash",
@@ -204,8 +186,9 @@ var selectOperationRow = function (layer, parentVal) {
    };
 };
 
-//----------------------------------------------------------------//
+//--------------------------update--------------------------------------//
 // start field update popout
+// new value
 var fieldUpdateOptions = function (field, id) {
    return {
       // batch "1" is visible initially
@@ -246,6 +229,7 @@ var fieldUpdateOptions = function (field, id) {
       ],
    };
 };
+// type of update todo
 var fieldUpdateSelector = function (field, id) {
    field = typeof (field) === ("String") ? field : field.value
    return (
@@ -278,53 +262,11 @@ var fieldUpdateSelector = function (field, id) {
       // ],
    );
 };
-
-var filterSelector = function (field, id) {
-   return {
-      cols: [
-         {
-            view: "select",
-            id: `updateType${field}${id}`,
-            vertical: true,
-            width: 200,
-            label: "",
-            value: "Custom",
-            options: [
-               "contains",
-               "doesn't contain",
-               "is",
-               "is not",
-               "*is empty",
-               "*is not empty",
-               "*By Query Field",
-               "*Not By Query Field",
-            ],
-            on: {
-               onChange: function (value) {
-                  // Update options to match what the user selected
-                  if (value) $$(`updateOption${id}`)?.showBatch(value);
-               },
-            },
-         },
-         {
-            view: "text",
-            width: 200,
-            value: "",
-         },
-         {
-            type: "clean",
-            cols: [
-               // show the options
-               fieldUpdateOptions(field, id),
-            ],
-         },
-      ],
-   };
-};
-
+// popup and row builder
 var updatePopout = function (data) {
    data.options = data.options || selectSource.options;
    var popoutCountRow = 0;
+   // what value to update
    var optionRow = function (id) {
       return {
          // default row
@@ -423,21 +365,65 @@ var updatePopout = function (data) {
          ],
       },
    });
-}; // end field update popout
-//----------------------------------------------------------------//
-
+}; 
+// end field update popout
+//--------------------filter--------------------------------------------//
+// start filter
+// how to filter it
+var filterSelector = function (field, id) {
+   return {
+      cols: [
+         {
+            view: "select",
+            id: `updateType${field}${id}`,
+            vertical: true,
+            width: 200,
+            label: "",
+            value: "Custom",
+            options: [
+               "contains",
+               "doesn't contain",
+               "is",
+               "is not",
+               "*is empty",
+               "*is not empty",
+               "*By Query Field",
+               "*Not By Query Field",
+            ],
+            on: {
+               onChange: function (value) {
+                  // Update options to match what the user selected
+                  if (value) $$(`updateOption${id}`)?.showBatch(value);
+               },
+            },
+         },
+         {
+            view: "text",
+            width: 200,
+            value: "",
+         },
+         {
+            type: "clean",
+            cols: [
+               // show the options
+               fieldUpdateOptions(field, id),
+            ],
+         },
+      ],
+   };
+};
 var filterPopout = function (data) {
    data.options = data.options || selectSource.options;
    var thisFilterId = `filter${data.parentVal}${data.layer}`;
    var newFilter = {};
+   // var oldFilter = filterStorage[thisFilterId]
    var oldFilter = filterStorage[thisFilterId]
-
 
    var filterRowCount = 1;
 
    var filterOptionRow = function () {
       return {
-         view: "select",
+         view: "select",   
          name: "set",
          options: data.options,
          on: {
@@ -510,8 +496,6 @@ var filterPopout = function (data) {
                      css: "webix_primary",
                      click: function () {
                         //  define new object
-                        let thisFilterId = `filter${data.parentVal}${data.layer}`;
-                        let newFilter = {};
                         newFilter[thisFilterId] = {
                            filteredObject: data.parentVal,
                            count: filterRowCount, // how many rows there are. used for badge
@@ -774,7 +758,7 @@ var form1 = {
       // select which object is first used in this querytask
       selectSource,
       // first task 
-      selectOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
+      baseOperationRow(0, "Currency"), // ! hard coding the selected value here, fix this
    ],
 };
 
@@ -790,7 +774,7 @@ function rebuildRow(formData) {
    removeRow(formData.layer + 1);//
    // replace source with a a row built from newdata
    webix.ui(
-      selectOperationRow(formData.layer, formData.newData),
+      baseOperationRow(formData.layer, formData.newData),
       $$(formData.source)
    );
 }
