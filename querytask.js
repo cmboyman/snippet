@@ -140,7 +140,7 @@ var baseOperationRow = function (layer, parentVal) {
             padding: 10,
             id: `rowLayer${layer}`,
             type: "clean",         
-            cols: [               
+            cols: [                          
                {
                   name: `rowLayer${layer}.operationType.select`,
                   view: "select",
@@ -172,6 +172,7 @@ var baseOperationRow = function (layer, parentVal) {
                },
                {
                   type: "clean",
+                  borderless:true,
                   cols: [
                      baseToolbar(layer, parentVal),
                      {
