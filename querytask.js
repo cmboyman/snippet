@@ -149,11 +149,11 @@ var baseOperationRow = function (layer, parentVal) {
                   width: 250,
                   value: "Choose next Operation",
                   options: [
+                     "Choose next Operation",
                      "Find",
                      "First",
                      "Pluck",
                      "Update Record",
-                     "Choose next Operation",
                      "Save",
                   ],
                   on: {
