@@ -139,15 +139,14 @@ var baseOperationRow = function (layer, parentVal) {
          {
             padding: 10,
             id: `rowLayer${layer}`,
-            type: "clean",
-            cols: [
+            type: "clean",         
+            cols: [               
                {
                   name: `rowLayer${layer}.operationType.select`,
                   view: "select",
                   id: `opVal${layer}`,
                   vertical: true,
                   width: 250,
-                  label: "Select",
                   value: "Choose next Operation",
                   options: [
                      "Find",
@@ -320,7 +319,6 @@ var updatePopout = function (data) {
                         webix.message(popoutCountRow);
                         $$("update_form").addView(
                            {
-                              view: "layout",
                               // name: `row${popoutCountRow}`,
                               cols: [
                                  optionRow(popoutCountRow), //
