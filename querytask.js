@@ -454,6 +454,7 @@ var filterPopout = function (data) {
       view: "window",
       modal: true,
       position: "top",
+      borderless:true,
       width: 600,
       height: 800,
       close: true,
