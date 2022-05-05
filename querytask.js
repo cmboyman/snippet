@@ -1,8 +1,6 @@
 //------------------------------------Open Window for Update Record Filter----------------------------//
 var popoutCountRow = 1;
 var finds = {};
-let updateStorage = {
-}
 let filterStorage = {
 };
 /*
@@ -13,12 +11,27 @@ let filterStorage = {
  * 
  * @return null
 */
-function pushValuesUp(value, targetName, layer) {
+function pushValuesUpToMain(value, targetName, layer) {
    let setValues = {}
    // ! feel free to change this for it to match the AB structure
    setValues[`rowLayer${layer}.userInput`] = value;
    setValues[`rowLayer${layer}.targetName`] = targetName;
    if (value) $$("main").setValues(setValues, true); // true here to not overwrite everything
+}
+/*
+ * @params
+ * value: value selected or input by user
+ * targetName: object row is going to act upon (?)
+ * layer: order in which this should be run
+ * 
+ * @return null
+*/
+function pushValuesTo(value, targetName, layer, myParentForm){
+   let setValues = {}
+   // ! feel free to change this for it to match the AB structure
+   setValues[`rowLayer${layer}.userInput`] = value;
+   setValues[`rowLayer${layer}.targetName`] = targetName;
+   if (value) $$(`${myParentForm}`)?.setValues(setValues, true); // true here to not overwrite everything
 }
 
 var baseToolbar = function (layer, parentVal) {
@@ -189,77 +202,80 @@ var baseOperationRow = function (layer, parentVal) {
 //--------------------------update--------------------------------------//
 // start field update popout
 // new value
-var fieldUpdateOptions = function (field, id) {
+var fieldUpdateOptions = function (field, layer) {
    return {
       // batch "1" is visible initially
       view: "toolbar",
       type: "clean",
-      name: `updateOption${id}`,
-      id: `updateOption${id}`,
+      name: `updateOption${layer}`,
+      id: `updateOption${layer}`,
       visibleBatch: "Custom",
       cols: [
          {
             view: "text",
-            // label: "Custom",
-            name: `Custom${id}`,
+            name: `Custom${layer}`,
             placeholder: "Type here..",
             batch: "Custom",
-            // label: "Custom value:"
+            on: {
+               onChange: function (value) {
+                  // passes up to popup window what the user selected
+                  pushValuesTo(value, field, layer, "update_form");
+               },
+            },
          },
          {
             view: "text",
             // label: "Script",
-            name: `Script${id}`,
+            name: `Script${layer}`,
             placeholder: "Code here..",
             batch: "Script",
             // label: "Custom value:"
+            on: {
+               onChange: function (value) {
+                  // passes up to popup window what the user selected
+                  pushValuesTo(value, field, layer, "update_form");
+               },
+            },
          },
          {
             view: "richselect",
-            name: `richselect${id}`,
+            name: `richselect${layer}`,
             batch: "From Process",
-            // label: 'Field:',
-            //value: 1,
+            // TODO use process data here
             options: [
                { id: 1, value: "One" },
                { id: 2, value: "Two" },
                { id: 3, value: "Three" },
             ],
+            on: {
+               onChange: function (value) {
+                  // passes up to popup window what the user selected
+                  pushValuesTo(value, field, layer, "update_form");
+               },
+            },
          },
       ],
    };
 };
 // type of update todo
-var fieldUpdateSelector = function (field, id) {
+var fieldUpdateSelector = function (field, layer) {
    field = typeof (field) === ("String") ? field : field.value
    return (
-      // name:"updateType",
-      // cols: [
       {
          view: "select",
          id: `updateType${field}`,
-         name: `updateType${field}${id}`,
+         name: `updateType${field}${layer}`,
          vertical: true,
          width: 100,
-         //label: "Select",
          value: "Custom",
          options: ["Custom", "Script", "From Process"],
          on: {
             onChange: function (value) {
                // Update options to match what the user selected
-               if (value) $$(`updateOption${id}`)?.showBatch(value);
+               if (value) $$(`updateOption${layer}`)?.showBatch(value);
             },
          },
-      },
-      //{
-      // type: "clean",
-      // name:"scrollBy",
-      // cols: [
-      // show the options
-      fieldUpdateOptions(field, id)//,
-      // ],
-      //},
-      // ],
+      }
    );
 };
 // popup and row builder
@@ -267,12 +283,12 @@ var updatePopout = function (data) {
    data.options = data.options || selectSource.options;
    var popoutCountRow = 0;
    // what value to update
-   var optionRow = function (id) {
+   var optionRow = function (layer) {
       return {
          // default row
          id: "source",
          view: "select", // label: "set",
-         name: `source${id}`,
+         name: `source${layer}`,
          options: selectSource.options,
       };
    };
@@ -342,13 +358,19 @@ var updatePopout = function (data) {
                      click: function () {
                         webix.message(popoutCountRow);
                         $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
-                        for (let index = 0; index <= popoutCountRow; index++) {
-                           let searchIndex = `updateOption${index}`//
-                           console.log("🚀 ~ file: querytask.js ~ line 378 ~ updatePopout ~ ", $$(searchIndex).getValues())
-                        }
+
                         console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
 
-                        //  $$(`popupUpdate${data.layer}`).refresh();
+                        let formValues = $$("update_form").getValues();
+
+                        //value, targetName, layer
+                        pushValuesUpToMain(formValues, data.parentVal, data.layer)
+                        //value, targetName, layer, myParentForm
+                        // ! Can't store data in button for some reason
+                        // pushValuesTo(formValues, data.parentVal, data.layer, `popupUpdate${data.layer}`)
+                        // pushValuesTo(formValues, data.parentVal, data.layer, `rowLayer${data.layer}.operationType.select`)
+                        // pushValuesTo(formValues, data.parentVal, data.layer, `opVal${data.layer}`)
+
                         this.getParentView().getParentView().getParentView().hide();
                      },
                   },
