@@ -1,5 +1,5 @@
 //------------------------------------Open Window for Update Record Filter----------------------------//
-var popoutCountRow = 1;
+//var popoutCountRow = 1;
 var finds = {};
 let filterStorage = {
 };
@@ -64,7 +64,7 @@ var baseToolbar = function (layer, parentVal) {
                      pluckedVal: value,
                      layer: layer + 1,
                   });
-                  pushValuesUp(value, 'rowLayer', layer);
+                  pushValuesUpToMain(value, 'rowLayer', layer);
                },
             },
          },
@@ -78,7 +78,7 @@ var baseToolbar = function (layer, parentVal) {
             label: "Variable:",
             on: {
                onChange: function (value) {
-                  pushValuesUp(value, 'rowLayer', layer)
+                  pushValuesUpToMain(value, 'rowLayer', layer)
                },
             },
          },
@@ -100,7 +100,6 @@ var baseToolbar = function (layer, parentVal) {
             view: "button",
             id: `popupFilter${layer}`,
             label: "Filter",
-            badge: 0,
             click: function () {
                rebuildRow({
                   source: `rowLayer${layer + 1}`,
@@ -126,7 +125,7 @@ var baseToolbar = function (layer, parentVal) {
                      layer: layer + 1,
                   });
                   // save that first was selected on the main form
-                  pushValuesUp("first", 'rowLayer', layer)
+                  pushValuesUpToMain("first", 'rowLayer', layer)
                },
             },
          },
@@ -272,9 +271,250 @@ var fieldUpdateSelector = function (field, layer) {
    );
 };
 // popup and row builder
+
+// Find select option column 2
+
+var findUpdateSelector = function (field, layer) {
+   //webix.message(layer)
+   field = typeof (field) === ("String") ? field : field.value
+   return (
+      {
+         view: "toolbar",
+         type: "clean",
+         borderless:true,
+         id: `findupdateType${layer}`,
+         name: `findupdateType${layer}`,
+         visibleBatch: "Title",
+         cols: [
+            {
+          
+               view: "select",
+               name: `Title${layer}`,
+               batch: "Title",
+               options: [
+                  { id: 1, value: "equals" },
+                  { id: 2, value: "does not equal" },
+               ], 
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },                  
+            
+            },
+            {
+               view: "select",
+               name: `Title${layer}`,
+               batch: "Title",
+               options: [
+                  { id: 0, value: ""},
+                  { id: 1, value: "Mr." },
+                  { id: 2, value: "Mrs." },
+                  { id: 3, value: "Miss" },
+                  { id: 4, value: "Dr." },
+                  { id: 5, value: "Rev." },               
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               },   
+            },
+            {
+               view: "select",
+               name: `Firstname${layer}`,
+               batch: "First Name",
+               options: [
+                  { id: 1, value: "contains" },
+                  { id: 2, value: "*doesn't contain" },
+                  { id: 3, value: "is" },
+                  { id: 4, value: "is not" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },   
+            },
+            {
+               view: "text",     
+               name: `Firstname${layer}`,        
+               placeholder: "Type here..",          
+               batch: "First Name",
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               }, 
+            },
+   
+            {
+               view: "select",
+               name: `Surename${layer}`,
+               batch: "Surename",
+               options: [
+                  { id: 1, value: "contains" },
+                  { id: 2, value: "*doesn't contain" },
+                  { id: 3, value: "is" },
+                  { id: 4, value: "is not" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },   
+            },
+            {
+               view: "text",     
+               name: `Surename${layer}`,        
+               placeholder: "Type here..",          
+               batch: "Surename",
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               }, 
+            },
+            {
+               view: "select",
+               name: `Gender${layer}`,
+               batch: "Gender",
+               options: [
+                  { id: 1, value: "equals" },
+                  { id: 2, value: "does not equal" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },   
+   
+            },
+   
+            {
+               view: "select",
+               name: `Gender${layer}`,
+               batch: "Gender",
+               options: [
+                  { id: 0, value: "" },
+                  { id: 1, value: "Male" },
+                  { id: 2, value: "Female" },   
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               }, 
+            },
+            {
+               view: "select",
+               name: `BirthDate${layer}`,
+               batch: "Birth Date",
+               options: [
+                  { id: 1, value: "is before" },
+                  { id: 2, value: "is after" },
+                  { id: 3, value: "is on or before" },
+                  { id: 4, value: "is on or after" },
+                  { id: 5, value: "*is before current date" },
+                  { id: 6, value: "*is after current date" },
+                  { id: 7, value: "*is on or before current" },
+                  { id: 8, value: "*is on or after current" },
+                  { id: 9, value: "*last...days" },
+                  { id: 10, value: "*next...days" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },   
+     
+            },
+            {
+               view:"datepicker",
+               name: `BirthDate${layer}`,
+               batch: "Birth Date",
+               inputWidth:120,   
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               },          
+             },
+            {
+               
+               view: "richselect",
+               name: `Family${layer}`,
+               batch: "Family",
+               options: [
+                  { id: 1, value: "*In Query" },
+                  { id: 2, value: "*Not In Query" },
+                  { id: 3, value: "*Same As User" },
+                  { id: 4, value: "*Not Same As User" },
+                  { id: 5, value: "*In Data Collection" },
+                  { id: 6, value: "*Not In Data Collection" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     if (value) $$(`updateOption${layer}`)?.showBatch(value);
+                  },
+               },   
+            },
+            {
+               view:"checkbox", 
+               name: `Active${layer}`,
+               batch:"Active", 
+               value:1,
+               uncheckValue:"Not Active", 
+               checkValue:"Active",              
+              on:{
+               onChange:function(value){               
+                 var getValchk = this.getValue();
+                  pushValuesTo(getValchk, field, layer, "update_form");                                  
+               }
+             }
+            },
+            {
+             
+               view: "richselect",
+               name: `Family${layer}`,
+               batch: "Family",
+               options: [
+                  { id: 1, value: "Smith" },
+                  { id: 2, value: "Johnson" },
+                  { id: 3, value: "Perry" },
+                  { id: 4, value: "Jones" },
+                  { id: 5, value: "Baxter" },
+                  { id: 6, value: "Hunt" },
+               ],
+               on: {
+                  onChange: function (value) {
+                     // Update options to match what the user selected
+                     pushValuesTo(value, field, layer, "update_form");
+                  },
+               }, 
+               
+            }
+       
+   
+         ],
+      }
+   );
+};
+
 var updatePopout = function (data) {
    data.options = data.options || selectSource.options;
-   var popoutCountRow = 0;
+   var popoutCountRow = 1;
    // what value to update
    var optionRow = function (layer) {
       return {
@@ -310,7 +550,7 @@ var updatePopout = function (data) {
                      icon: "wxi-plus",
                      click: function () {
                         popoutCountRow++;
-                        webix.message(popoutCountRow);
+                        
                         $$("update_form").addView(
                            {
                               // name: `row${popoutCountRow}`,
@@ -324,7 +564,7 @@ var updatePopout = function (data) {
                                     click: function () {
                                        popoutCountRow--;
 
-                                       webix.message(popoutCountRow);
+                                     //  webix.message(popoutCountRow);
                                        let toRemove = this.getParentView();
                                        this.getParentView()
                                           .getParentView()
@@ -348,9 +588,13 @@ var updatePopout = function (data) {
                      value: "Save",
                      css: "webix_primary",
                      click: function () {
-                        webix.message(popoutCountRow);
-                        $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
+                        // webix.message(popoutCountRow);
+                        if(popoutCountRow=="0"){
 
+                        }else{
+                        $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
+                        $$(`popupUpdate${data.layer}`).refresh();
+                        }
                         console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
 
                         let formValues = $$("update_form").getValues();
@@ -395,24 +639,28 @@ var filterSelector = function (field, id) {
             label: "",
             value: "Custom",
             options: [
-               "contains",
-               "doesn't contain",
-               "is",
-               "is not",
-               "*is empty",
-               "*is not empty",
-               "*By Query Field",
-               "*Not By Query Field",
+               { id: 1, value: "contains"},
+               { id: 2, value: "doesn't contain"},
+               { id: 3, value: "is"},
+               { id: 4, value: "is not"},
+               { id: 5, value: "*is empty"},
+               { id: 6, value: "*is not empty"},
+               { id: 7, value: "*By Query Field"},
+               { id: 8, value: "*Not By Query Field"},
             ],
             on: {
                onChange: function (value) {
+               //   webix.message(value);
                   // Update options to match what the user selected
-                  if (value) $$(`updateOption${id}`)?.showBatch(value);
+               //   if (value) $$(`updateOption${id}`)?.showBatch(value);
+                 // pushValuesTo(value, field, id, "update_form");
                },
             },
          },
          {
             view: "text",
+            id: "AddNewFilter",
+            name: "AddNewFilter",
             width: 200,
             value: "",
          },
@@ -427,14 +675,13 @@ var filterSelector = function (field, id) {
    };
 };
 var filterPopout = function (data) {
-   data.options = data.options || selectSource.options;
+   data.options = data.options || selectfindfilters.options;
    var thisFilterId = `filter${data.parentVal}${data.layer}`;
+
    var newFilter = {};
    // var oldFilter = filterStorage[thisFilterId]
    var oldFilter = filterStorage[thisFilterId]
-
-   var filterRowCount = 1;
-
+   
    var filterOptionRow = function () {
       return {
          view: "select",   
@@ -444,11 +691,34 @@ var filterPopout = function (data) {
             c: function (newValue, oldValue) {
                // Update fieldUpdateSelector to match what the user selected
                if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-               this.getParentView().addView(filterSelector(value, filterRowCount));
+               this.getParentView().addView(filterSelector(value, findpopoutCountRow));
+               pushValuesTo(value, field, layer, "update_form");
             },
          },
       };
    };
+
+   var findOptionRow = function (layer) {
+      //webix.message(layer)
+      return {
+         // default row
+         id: "source",
+         view: "select", // label: "set",
+         name: `source${layer}`,
+         options: selectfindfilters.options,
+         on: {
+            onChange: function (value) {
+               //todo change the rest of the row to match the type       
+              // pushValuesTo(newv, field, layer, "update_form");
+    
+              if (value) $$(`findupdateType${layer}`)?.showBatch(value);         
+        
+             },
+         },
+      };
+   };
+
+   var findpopoutCountRow = 1;
 
    return webix.ui({
       view: "window",
@@ -463,30 +733,30 @@ var filterPopout = function (data) {
       body: {
          view: "form",
          id: "update_form",
+         name: "update_form",
          elements: [
             {
                cols: [
-                  filterOptionRow(),
-                  filterSelector(data.options[0], filterRowCount, data.options),
-
+                  findOptionRow(findpopoutCountRow),
+                  findUpdateSelector(data.options[0], findpopoutCountRow),
                   // add new fields to update
                   {
                      view: "icon",
                      icon: "wxi-plus",
                      click: function () {
-                        filterRowCount++;
+                        findpopoutCountRow++;
                         $$("update_form").addView(
                            {
                               view: "layout",
                               cols: [
-                                 filterOptionRow(),
-                                 filterSelector(data.options[0], filterRowCount, data.options),
-
+                                 findOptionRow(findpopoutCountRow),
+                                 findUpdateSelector(data.options[0], findpopoutCountRow),
+                             
                                  {
                                     view: "icon",
                                     icon: "wxi-trash",
                                     click: function () {
-                                       filterRowCount--;
+                                       findpopoutCountRow--;
                                        let toRemove = this.getParentView();
                                        this.getParentView()
                                           .getParentView()
@@ -511,20 +781,29 @@ var filterPopout = function (data) {
                      css: "webix_primary",
                      click: function () {
                         //  define new object
-                        newFilter[thisFilterId] = {
-                           filteredObject: data.parentVal,
-                           count: filterRowCount, // how many rows there are. used for badge
-                           options: {}, // each row
-                        };
-                        
+                        // newFilter[thisFilterId] = {
+                        //    filteredObject: data.parentVal,
+                        //    count: findpopoutCountRow, // how many rows there are. used for badge
+                        //    options: {}, // each row
+                        // };
+                      
                         // update button
                         // ? should the value also be saved in the button?
-                        $$(`popupFilter${data.layer}`).config.badge = filterRowCount;
+                        if(findpopoutCountRow=="0"){
+
+                        }else{
+                        $$(`popupFilter${data.layer}`).config.badge = findpopoutCountRow;
                         $$(`popupFilter${data.layer}`).refresh();
-                        
+                        }
+                        console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
+                        let findformValues = $$("update_form").getValues();
+
+                        //value, targetName, layer
+                        pushValuesUpToMain(findformValues, data.parentVal, data.layer)
+
                         // save row values in parent
                         // pushValuesUp(value, targetName, layer)
-                        pushValuesUp(newFilter, data.parentVal, data.layer)
+                      //  pushValuesUpToMain(newFilter, data.parentVal, data.layer)
 
                         // ? is there a better way to get the popup?
                         this.getParentView().getParentView().getParentView().hide();
@@ -741,26 +1020,43 @@ var selectSource = {
       },
    },
 };
+//---------First Field Find Filters Example-------------------------//
+const exampleObjects = {
+   Family:[
+      "The Duncans", 'The Poolmans'
+   ]
+}
 
-var selectSource_filters = {
+var selectfindfilters = {
    view: "select",
-   id: "select_filter",
-   name: "select_filter",
+   id: "select2",
+   name: "select2",
    options: [
-      { value: "contains" },
-      { value: "doesn't contain" },
-      { value: "is" },
-      { value: "is not" },
-      { value: "*is empty" },
-      { value: "*is not empty" },
-      { value: "*By Query Field" },
-      { value: "*Not By Query Field" },
+      { value: "Title", type:"text" },
+      { value: "First Name" },
+      { value: "Surename" },
+      { value: "Gender",type:"select" },
+      { value: "Birth Date",type:"date" },
+      { value: "Active", type:"checkbox"},
+      { 
+         // show object
+         // also show additional options...?
+         value: "Family",type:"connectedObject", objectID:"Family"
+      }, 
    ],
-   width: 250,
+   width: 100,
    on: {
-      onChange: function (newv, oldv, config) { },
+      onChange: function (value) {
+       
+         //todo change the rest of the row to match the type       
+        // pushValuesTo(newv, field, layer, "update_form");
+     
+        if (value) $$(`findupdateType${layer}`)?.showBatch(value);         
+  
+       },
    },
 };
+
 //------------------Select List------------------------//
 var form1 = {
    view: "form",
@@ -814,6 +1110,7 @@ webix.ui({
                css: "webix_primary",
                click: function () {
                   console.log($$("main").getValues());
+                  // console.log($$("update_form").getValues());
                   // var check_select = $$("select2").getValue();
                   // if (check_select == "update record")
                   //  // TODO save button here
