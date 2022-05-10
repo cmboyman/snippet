@@ -522,7 +522,7 @@ var updatePopout = function (data) {
          // default row
          id: "source",
          view: "select", // label: "set",
-         name: `source${layer}`,
+         name: `source.${layer}`,
          options: selectSource.options,
       };
    };
@@ -679,9 +679,30 @@ var filterPopout = function (data) {
    data.options = data.options || selectfindfilters.options;
    var thisFilterId = `filter${data.parentVal}${data.layer}`;
 
+   // get if exists
+   let d = $$("main").getValues()
+  
+   debugger
+   if( d.rowLayer[data.layer].taskParam){
+      // var oldFilter = filterStorage[thisFilterId]
+      var oldFilter = d.rowLayer[data.layer].taskParam;
+
+      // iterate throuhg:
+      // source and rowlayer
+      for (let index = 0; oldFilter.source[index]; index++) {
+         // const rowlayer = oldFilter?.rowlayer[index];
+         const source = oldFilter?.source[index];
+         // make the rows using this
+         if(index){
+            // after first, add another row
+            addRow()
+         }
+      }
+   }
+
+
    var newFilter = {};
-   // var oldFilter = filterStorage[thisFilterId]
-   var oldFilter = filterStorage[thisFilterId]
+   
    
    var filterOptionRow = function () {
       return {
@@ -694,6 +715,7 @@ var filterPopout = function (data) {
                if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
                this.getParentView().addView(filterSelector(value, findpopoutCountRow));
                pushValuesTo(value, field, layer, "update_form");
+               
             },
          },
       };
@@ -705,7 +727,7 @@ var filterPopout = function (data) {
          // default row
          id: "source",
          view: "select", // label: "set",
-         name: `source${layer}`,
+         name: `source.${layer}`,
          options: selectfindfilters.options,
          on: {
             onChange: function (value) {
@@ -719,7 +741,32 @@ var filterPopout = function (data) {
       };
    };
 
-   var findpopoutCountRow = 1;
+   var findpopoutCountRow = 0;
+
+   function addRow(){
+      $$("update_form").addView(
+         {
+            view: "layout",
+            cols: [
+               findOptionRow(findpopoutCountRow),
+               findUpdateSelector(data.options[0], findpopoutCountRow),
+           
+               {
+                  view: "icon",
+                  icon: "wxi-trash",
+                  click: function () {
+                     findpopoutCountRow--;
+                     let toRemove = this.getParentView();
+                     this.getParentView()
+                        .getParentView()
+                        .removeView(toRemove);
+                  },
+               },
+            ],
+         },
+         1
+      );
+   }
 
    return webix.ui({
       view: "window",
@@ -746,28 +793,7 @@ var filterPopout = function (data) {
                      icon: "wxi-plus",
                      click: function () {
                         findpopoutCountRow++;
-                        $$("update_form").addView(
-                           {
-                              view: "layout",
-                              cols: [
-                                 findOptionRow(findpopoutCountRow),
-                                 findUpdateSelector(data.options[0], findpopoutCountRow),
-                             
-                                 {
-                                    view: "icon",
-                                    icon: "wxi-trash",
-                                    click: function () {
-                                       findpopoutCountRow--;
-                                       let toRemove = this.getParentView();
-                                       this.getParentView()
-                                          .getParentView()
-                                          .removeView(toRemove);
-                                    },
-                                 },
-                              ],
-                           },
-                           1
-                        );
+                        addRow()
                      },
                   },
                ],
@@ -1063,6 +1089,7 @@ var form1 = {
    view: "form",
    id: "main",
    name: "main",
+   complexData:true,
 
    elements: [
       // Query task name
