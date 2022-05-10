@@ -14,8 +14,9 @@ let filterStorage = {
 function pushValuesUpToMain(value, targetName, layer) {
    let setValues = {}
    // ! feel free to change this for it to match the AB structure
-   setValues[`rowLayer${layer}.userInput`] = value;
-   setValues[`rowLayer${layer}.targetName`] = targetName;
+   setValues[`rowLayer.${layer}.taskParam`] = value;
+   setValues[`rowLayer.${layer}.field`] = targetName;
+   // TODO push the object ID here as well
    if (value) $$("main").setValues(setValues, true); // true here to not overwrite everything
 }
 /*
@@ -29,8 +30,8 @@ function pushValuesUpToMain(value, targetName, layer) {
 function pushValuesTo(value, targetName, layer, myParentForm){
    let setValues = {}
    // ! feel free to change this for it to match the AB structure
-   setValues[`rowLayer${layer}.userInput`] = value;
-   setValues[`rowLayer${layer}.targetName`] = targetName;
+   setValues[`rowLayer.${layer}.taskParam`] = value;
+   setValues[`rowLayer.${layer}.field`] = targetName;
    if (value) $$(`${myParentForm}`)?.setValues(setValues, true); // true here to not overwrite everything
 }
 
@@ -60,7 +61,7 @@ var baseToolbar = function (layer, parentVal) {
                   // passes in what the user selected
                   // add a new field
                   rebuildRow({
-                     source: `rowLayer${layer + 1}`,
+                     source: `rowLayer.${layer + 1}`,
                      pluckedVal: value,
                      layer: layer + 1,
                   });
@@ -88,7 +89,7 @@ var baseToolbar = function (layer, parentVal) {
             label: "Update Popout",
             click: function () {
                rebuildRow({
-                  source: `rowLayer${layer + 1}`,
+                  source: `rowLayer.${layer + 1}`,
                   // pluckedVal: value, // pass in selected data
                   layer: layer + 1,
                });
@@ -102,7 +103,7 @@ var baseToolbar = function (layer, parentVal) {
             label: "Filter",
             click: function () {
                rebuildRow({
-                  source: `rowLayer${layer + 1}`,
+                  source: `rowLayer.${layer + 1}`,
                   // pluckedVal: value, // pass in selected data
                   layer: layer + 1,
                });
@@ -120,7 +121,7 @@ var baseToolbar = function (layer, parentVal) {
                   // TODO get current data and select first
                   // add a new row
                   rebuildRow({
-                     source: `rowLayer${layer + 1}`,
+                     source: `rowLayer.${layer + 1}`,
                      // pluckedVal: value, // pass in selected data
                      layer: layer + 1,
                   });
@@ -137,11 +138,11 @@ var baseOperationRow = function (layer, parentVal) {
       rows: [
          {
             padding: 10,
-            id: `rowLayer${layer}`,
+            id: `rowLayer.${layer}`,
             type: "clean",         
             cols: [                  
                {
-                  name: `rowLayer${layer}.operationType.select`,
+                  name: `rowLayer.${layer}.key`,
                   view: "select",
                   id: `opVal${layer}`,
                   vertical: true,
@@ -162,7 +163,7 @@ var baseOperationRow = function (layer, parentVal) {
                         if (value) $$(`tbar${layer}`)?.showBatch(value)
 
                         rebuildRow({
-                           source: `rowLayer${layer + 1}`,
+                           source: `rowLayer.${layer + 1}`,
                            // pluckedVal: value, // pass in selected data
                            layer: layer + 1,
                         });
@@ -182,7 +183,7 @@ var baseOperationRow = function (layer, parentVal) {
             ],
          },
          {
-            id: `rowLayer${layer + 1}`,
+            id: `rowLayer.${layer + 1}`,
             hidden: true,
             cols: [],
          },
@@ -604,7 +605,7 @@ var updatePopout = function (data) {
                         //value, targetName, layer, myParentForm
                         // ! Can't store data in button for some reason
                         // pushValuesTo(formValues, data.parentVal, data.layer, `popupUpdate${data.layer}`)
-                        // pushValuesTo(formValues, data.parentVal, data.layer, `rowLayer${data.layer}.operationType.select`)
+                        // pushValuesTo(formValues, data.parentVal, data.layer, `rowLayer.${data.layer}.operationType.select`)
                         // pushValuesTo(formValues, data.parentVal, data.layer, `opVal${data.layer}`)
 
                         this.getParentView().getParentView().getParentView().hide();
@@ -1090,10 +1091,10 @@ function rebuildRow(formData) {
    );
 }
 function removeRow(layer) {
-   if ($$(`rowLayer${layer}`)) {
+   if ($$(`rowLayer.${layer}`)) {
       removeRow(layer + 1); // recursively remove
       // find the rowLayer_ view, get parent, then remove from parent 
-      $$(`rowLayer${layer}`).getParentView().removeView(`rowLayer${layer}`);
+      $$(`rowLayer.${layer}`).getParentView().removeView(`rowLayer.${layer}`);
    }
 
 }
