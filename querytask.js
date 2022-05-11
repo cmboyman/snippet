@@ -1,8 +1,6 @@
-//------------------------------------Open Window for Update Record Filter----------------------------//
-//var popoutCountRow = 1;
-var finds = {};
-let filterStorage = {
-};
+
+//-------- Tools used to communicate between layers and rows --//
+// --- tools used to push data into the form
 /*
  * @params
  * value: value selected or input by user
@@ -34,6 +32,7 @@ function pushValuesTo(value, targetName, layer, myParentForm){
    setValues[`rowLayer.${layer}.field`] = targetName;
    if (value) $$(`${myParentForm}`)?.setValues(setValues, true); // true here to not overwrite everything
 }
+// end tools
 
 var baseToolbar = function (layer, parentVal) {
    return {
@@ -60,11 +59,11 @@ var baseToolbar = function (layer, parentVal) {
                onChange: function (value) {
                   // passes in what the user selected
                   // add a new field
-                  rebuildRow({
-                     source: `rowLayer.${layer + 1}`,
-                     pluckedVal: value,
-                     layer: layer + 1,
-                  });
+                  // rebuildRow({
+                  //    source: `rowLayer.${layer + 1}`,
+                  //    pluckedVal: value,
+                  //    layer: layer + 1,
+                  // });
                   pushValuesUpToMain(value, 'rowLayer', layer);
                },
             },
@@ -88,11 +87,11 @@ var baseToolbar = function (layer, parentVal) {
             id: `popupUpdate${layer}`,
             label: "Update Popout",
             click: function () {
-               rebuildRow({
-                  source: `rowLayer.${layer + 1}`,
-                  // pluckedVal: value, // pass in selected data
-                  layer: layer + 1,
-               });
+               // rebuildRow({
+               //    source: `rowLayer.${layer + 1}`,
+               //    // pluckedVal: value, // pass in selected data
+               //    layer: layer + 1,
+               // });
                updatePopout({ parentVal: parentVal, layer: layer }).show();
             },
             batch: "Update Record",
@@ -102,12 +101,25 @@ var baseToolbar = function (layer, parentVal) {
             id: `popupFilter${layer}`,
             label: "Filter",
             click: function () {
-               rebuildRow({
-                  source: `rowLayer.${layer + 1}`,
-                  // pluckedVal: value, // pass in selected data
-                  layer: layer + 1,
-               });
-               filterPopout({ layer: layer, parentVal: parentVal }).show();
+               // TODO
+               // rebuild IF NOt Exist
+               // check if exist, else rebild?
+              // debugger
+               
+               // rebuildRow({
+               //    source: `rowLayer.${layer + 1}`,
+               //    // pluckedVal: value, // pass in selected data
+               //    layer: layer + 1,
+               // });
+
+               filterPopout({ parentVal: parentVal, layer: layer }).show();
+                
+               // // fill
+               // let mainValues = $$("main").getValues()
+               // if( mainValues.rowLayer[layer].taskParam){
+               //    // debugger
+               //    $$(update_form).setValues(mainValues.rowLayer[data.layer].taskParam)
+               // }
             },
             batch: "Find",
          },
@@ -590,12 +602,10 @@ var updatePopout = function (data) {
                      css: "webix_primary",
                      click: function () {
                         // webix.message(popoutCountRow);
-                        if(popoutCountRow=="0"){
-
-                        }else{
+               
                         $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
                         $$(`popupUpdate${data.layer}`).refresh();
-                        }
+                        
                         console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
 
                         let formValues = $$("update_form").getValues();
@@ -627,6 +637,8 @@ var updatePopout = function (data) {
 }; 
 // end field update popout
 //--------------------filter--------------------------------------------//
+//------------------------------------Open Window for Update Record Filter----------------------------//
+
 // start filter
 // how to filter it
 var filterSelector = function (field, id) {
@@ -680,30 +692,9 @@ var filterPopout = function (data) {
    var thisFilterId = `filter${data.parentVal}${data.layer}`;
 
    // get if exists
-   let d = $$("main").getValues()
-  
-   debugger
-   if( d.rowLayer[data.layer].taskParam){
-      // var oldFilter = filterStorage[thisFilterId]
-      var oldFilter = d.rowLayer[data.layer].taskParam;
-
-      // iterate throuhg:
-      // source and rowlayer
-      for (let index = 0; oldFilter.source[index]; index++) {
-         // const rowlayer = oldFilter?.rowlayer[index];
-         const source = oldFilter?.source[index];
-         // make the rows using this
-         if(index){
-            // after first, add another row
-            addRow()
-         }
-      }
-   }
-
-
-   var newFilter = {};
-   
-   
+   var findpopoutCountRow = 0;
+   let mainValues = $$("main").getValues()
+    
    var filterOptionRow = function () {
       return {
          view: "select",   
@@ -713,7 +704,7 @@ var filterPopout = function (data) {
             c: function (newValue, oldValue) {
                // Update fieldUpdateSelector to match what the user selected
                if (newValue) $$(`updateType${oldValue}`)?.removeView(value);
-               this.getParentView().addView(filterSelector(value, findpopoutCountRow));
+               this.getParentView().addView(selectfindfilters(value, findpopoutCountRow));
                pushValuesTo(value, field, layer, "update_form");
                
             },
@@ -740,14 +731,117 @@ var filterPopout = function (data) {
          },
       };
    };
+   /// here, create first half of elements
+   // [{},{},{}]
+   var elementsTempate = [ {
+      cols: [
+         findOptionRow(findpopoutCountRow),
+         findUpdateSelector(data.options[0], findpopoutCountRow),
+         // add new fields to update
+         {
+            view: "icon",
+            icon: "wxi-plus",
+            click: function () {
+               findpopoutCountRow++;
+               addRow()
+            },
+         },
+      ],
+   },]
+   // debugger
+   // if( mainValues.rowLayer[data.layer].taskParam){
+   //    var oldFilter = mainValues.rowLayer[data.layer].taskParam;
 
-   var findpopoutCountRow = 0;
+   //    // iterate throuhg:
+   //    // source and rowlayer
+   //    for (let index = 0; Boolean(oldFilter.source[index]); index++) {
+   //       // const rowlayer = oldFilter?.rowlayer[index];
+   //       const source = oldFilter?.source[index];
+   //       // make the rows using this
+   //       if(index){
+   //          // after first, add another row
+   //         elementsTempate.push({
+   //          view: "layout",
+   //          cols: [
+   //             findOptionRow(findpopoutCountRow),
+   //             findUpdateSelector(data.options[0], findpopoutCountRow),
+           
+   //             {
+   //                view: "icon",
+   //                icon: "wxi-trash",
+   //                click: function () {
+   //                   findpopoutCountRow--;
+   //                   let toRemove = this.getParentView();
+   //                   this.getParentView()
+   //                      .getParentView()
+   //                      .removeView(toRemove);
+   //                },
+   //             },
+   //          ],
+   //       })
+   //       }
+   //    }
+   // }
+   // push rest of elements
+   elementsTempate.push({
+      margin: 5,
+      cols: [
+         {},
+         {
+            view: "button",
+            value: "Save",
+            css: "webix_primary",
+            click: function () {
+               //  define new object
+               // newFilter[thisFilterId] = {
+               //    filteredObject: data.parentVal,
+               //    count: findpopoutCountRow, // how many rows there are. used for badge
+               //    options: {}, // each row
+               // };
+             
+               // update button
+               // ? should the value also be saved in the button?
+               $$(`popupFilter${data.layer}`).config.badge = ++findpopoutCountRow;
+               $$(`popupFilter${data.layer}`).refresh();
+               
+               console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
+               let findformValues = $$("update_form").getValues();
+
+               //value, targetName, layer
+               pushValuesUpToMain(findformValues, data.parentVal, data.layer)
+
+               // save row values in parent
+               // pushValuesUp(value, targetName, layer)
+             //  pushValuesUpToMain(newFilter, data.parentVal, data.layer)
+
+               // ? is there a better way to get the popup?
+               this.getParentView().getParentView().getParentView().hide();
+            },
+         },
+         {
+            view: "button",
+            value: "Cancel",
+            click: function () {
+               this.getParentView().getParentView().getParentView().hide();
+            },
+         },
+         {},
+      ],
+   })
+
+
+   var newFilter = {};
+   
+ 
+
+   
 
    function addRow(){
       $$("update_form").addView(
          {
             view: "layout",
             cols: [
+ 
                findOptionRow(findpopoutCountRow),
                findUpdateSelector(data.options[0], findpopoutCountRow),
            
@@ -782,71 +876,9 @@ var filterPopout = function (data) {
          view: "form",
          id: "update_form",
          name: "update_form",
-         elements: [
-            {
-               cols: [
-                  findOptionRow(findpopoutCountRow),
-                  findUpdateSelector(data.options[0], findpopoutCountRow),
-                  // add new fields to update
-                  {
-                     view: "icon",
-                     icon: "wxi-plus",
-                     click: function () {
-                        findpopoutCountRow++;
-                        addRow()
-                     },
-                  },
-               ],
-            },
-            {
-               margin: 5,
-               cols: [
-                  {},
-                  {
-                     view: "button",
-                     value: "Save",
-                     css: "webix_primary",
-                     click: function () {
-                        //  define new object
-                        // newFilter[thisFilterId] = {
-                        //    filteredObject: data.parentVal,
-                        //    count: findpopoutCountRow, // how many rows there are. used for badge
-                        //    options: {}, // each row
-                        // };
-                      
-                        // update button
-                        // ? should the value also be saved in the button?
-                        if(findpopoutCountRow=="0"){
-
-                        }else{
-                        $$(`popupFilter${data.layer}`).config.badge = findpopoutCountRow;
-                        $$(`popupFilter${data.layer}`).refresh();
-                        }
-                        console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
-                        let findformValues = $$("update_form").getValues();
-
-                        //value, targetName, layer
-                        pushValuesUpToMain(findformValues, data.parentVal, data.layer)
-
-                        // save row values in parent
-                        // pushValuesUp(value, targetName, layer)
-                      //  pushValuesUpToMain(newFilter, data.parentVal, data.layer)
-
-                        // ? is there a better way to get the popup?
-                        this.getParentView().getParentView().getParentView().hide();
-                     },
-                  },
-                  {
-                     view: "button",
-                     value: "Cancel",
-                     click: function () {
-                        this.getParentView().getParentView().getParentView().hide();
-                     },
-                  },
-                  {},
-               ],
-            },
-         ],
+         elements: elementsTempate,
+         // elements: [
+         // ],
       },
    });
 };
@@ -1101,7 +1133,7 @@ var form1 = {
    ],
 };
 
-//----------------------------------------------------------------//
+//--------------------------tools to update other rows--------------------------------------//
 /*
 * parameters:
 * { layer: "0", // string int
@@ -1109,8 +1141,9 @@ var form1 = {
 * source: "rowLayer0" }
 */
 function rebuildRow(formData) {
+  // debugger
    // TODO 
-   removeRow(formData.layer + 1);//
+ //  removeRow(formData.layer + 1);//
    // replace source with a a row built from newdata
    webix.ui(
       baseOperationRow(formData.layer, formData.newData),
@@ -1123,8 +1156,9 @@ function removeRow(layer) {
       // find the rowLayer_ view, get parent, then remove from parent 
       $$(`rowLayer.${layer}`).getParentView().removeView(`rowLayer.${layer}`);
    }
-
 }
+// end tools
+
 webix.ui({
    id: "log_form",
    rows: [
