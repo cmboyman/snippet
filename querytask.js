@@ -92,7 +92,19 @@ var baseToolbar = function (layer, parentVal) {
                //    // pluckedVal: value, // pass in selected data
                //    layer: layer + 1,
                // });
-               updatePopout({ parentVal: parentVal, layer: layer }).show();
+               webix.confirm({
+                  title:"Continue?",
+                  ok:"Yes", cancel:"No",
+                  text:"changing this rule will reset any following rules."
+                })
+                  .then(function(){                   
+                     updatePopout({ parentVal: parentVal, layer: layer }).show();
+               })
+                    .fail(function(){
+                  
+               });  
+
+               
             },
             batch: "Update Record",
          },
@@ -602,23 +614,24 @@ var updatePopout = function (data) {
                      css: "webix_primary",
                      click: function () {
                         // webix.message(popoutCountRow);
-               
-                        $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
-                        $$(`popupUpdate${data.layer}`).refresh();
-                        
-                        console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
 
-                        let formValues = $$("update_form").getValues();
-
-                        //value, targetName, layer
-                        pushValuesUpToMain(formValues, data.parentVal, data.layer)
-                        //value, targetName, layer, myParentForm
-                        // ! Can't store data in button for some reason
-                        // pushValuesTo(formValues, data.parentVal, data.layer, `popupUpdate${data.layer}`)
-                        // pushValuesTo(formValues, data.parentVal, data.layer, `rowLayer.${data.layer}.operationType.select`)
-                        // pushValuesTo(formValues, data.parentVal, data.layer, `opVal${data.layer}`)
-
-                        this.getParentView().getParentView().getParentView().hide();
+                              $$(`popupUpdate${data.layer}`).config.badge = popoutCountRow;
+                              $$(`popupUpdate${data.layer}`).refresh();
+                          
+                              console.log("🚀 ~ file: querytask.js ~ line 334 ~ updatePopout ~ .getValues()", $$("update_form").getValues())
+  
+                              let formValues = $$("update_form").getValues();
+  
+                              //value, targetName, layer
+                                pushValuesUpToMain(formValues, data.parentVal, data.layer)
+                              //value, targetName, layer, myParentForm
+                              // ! Can't store data in button for some reason
+                              // pushValuesTo(formValues, data.parentVal, data.layer, `popupUpdate${data.layer}`)
+                              // pushValuesTo(formValues, data.parentVal, data.layer, `rowLayer.${data.layer}.operationType.select`)
+                              // pushValuesTo(formValues, data.parentVal, data.layer, `opVal${data.layer}`)
+             
+                              this.getParentView().getParentView().getParentView().hide();
+     
                      },
                   },
                   {
